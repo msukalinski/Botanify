@@ -1,0 +1,17 @@
+export const colors = {
+    screenBackground: '#F6F8F2',
+    cardBackground: '#FFFFFF',
+    mainText: '#173F36',
+    secondaryText: '#69756B',
+    primaryGreen: '#438B5C',
+    lightGreenBackground: '#E7F1E5',
+    border: '#E1E8DD',
+    overdueText: '#B77932',
+    overdueBackground: '#FFF2DF',
+    waterText: '#A93C2B',
+    waterBackground: '#FFE5DE',
+    healthyText: '#326B35',
+    healthyBackground: '#DDEED4',
+    lightText: '#94600C',
+    lightBackground: '#FFF0C7',
+};
