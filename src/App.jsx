@@ -2,7 +2,7 @@ import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { colors } from './theme';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeView from './components/home-view/HomeView';
-import Login from './components/home-view/login/Login';
+import Login from './components/login/Login';
 
 export default function App() {
 	return (
@@ -10,7 +10,6 @@ export default function App() {
 			<View style={styles.app}>
 				<StatusBar barStyle='dark-content' />
 				{/* <HomeView /> */}
-				<Login />
 			</View>
 		</SafeAreaProvider>
 	);

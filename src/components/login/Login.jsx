@@ -11,9 +11,9 @@ import {
     View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import { colors } from "../../../theme";
 import Ionicons from "@react-native-vector-icons/ionicons";
+
+import { colors } from "../../theme";
 
 export default function Login({
     onLogin,
