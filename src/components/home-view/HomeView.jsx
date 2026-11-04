@@ -1,7 +1,17 @@
+import {
+    Image,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    useWindowDimensions,
+    View
+} from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors } from "../../theme";
-import { Image, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import Ionicons from "@react-native-vector-icons/ionicons";
+
+import { colors } from "../../theme";
 
 const plants = [
     {
@@ -79,6 +89,19 @@ export default function HomeView() {
 
                 <HomeHeader />
 
+                <View style={styles.searchBar}>
+                    <Ionicons name="search-outline" size={22} color={colors.secondaryText} />
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder="1470"
+                        // placeholder="Search plants, care tips, or problems..."
+                        placeholderTextColor={colors.secondaryText}
+                        accessibilityLabel="Search plants, care tips"
+                        returnKeyType="search"
+                        autoCorrect={false}
+                    />
+                </View>
+
                 <View style={styles.section}>
                     <SectionHeader
                         title="My Plants"
@@ -96,34 +119,92 @@ export default function HomeView() {
                                 key={plant.id}
                                 plant={plant}
                                 width={plantCardWidth}
+                            // onPress={}
                             // onMenuPress={}
                             />
                         ))}
                     </ScrollView>
                 </View>
 
-                <View style={styles.careBody}>
-                    <View style={styles.careList}>
-                        <CareRow 
-                        icon="water"
-                        iconColor="#168C96"
-                        iconBackground="#D8EEEB"
-                        title="Water 1 plant"
-                        subtitle="Monstera needs water"
-                        // onPress={}
-                        />
-                        <View style={styles.careDivider} />
-                        <CareRow 
-                        icon="leaf"
-                        iconColor={colors.primaryGreen}
-                        iconBackground="#DDEDCF"
-                        title="Check light"
-                        subtitle="Pothos prefers indirect light"
-                        // onPress={}
-                        />
+                <View style={styles.carePanel}>
+                    <SectionHeader
+                        title="Today's Care"
+                        actionLabel="See all"
+                    // onPress={ }
+                    />
+
+                    <View style={styles.careBody}>
+                        <View style={styles.careList}>
+                            <CareRow
+                                icon="water"
+                                iconColor="#168C96"
+                                iconBackground="#D8EEEB"
+                                title="Water 1 plant"
+                                subtitle="Monstera needs water"
+                            // onPress={}
+                            />
+                            <View style={styles.careDivider} />
+                            <CareRow
+                                icon="leaf"
+                                iconColor={colors.primaryGreen}
+                                iconBackground="#DDEDCF"
+                                title="Check light"
+                                subtitle="Pothos prefers indirect light"
+                            // onPress={}
+                            />
+                        </View>
+                        <View style={styles.careDecoration} accessible={false}>
+                            <View style={styles.careDecorationCircle}>
+                                <Ionicons name="water-outline" size={38} color="#7A9A63" />
+                            </View>
+                            <Text style={styles.careQuote}>Small steps,{'\n'}healthy plants</Text>
+                        </View>
                     </View>
                 </View>
 
+                <View style={styles.quickLinks}>
+                    <Pressable
+                        style={({ pressed }) => [styles.quickCard, styles.scheduleCard, pressed && styles.pressed]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Watering schedule, 3 plants this week"
+                    // onPress={}
+                    >
+                        <View style={styles.quickCardHeader}>
+                            <View style={[styles.quickIcon, styles.scheduleIcon]}>
+                                <Ionicons name="calendar-outline" size={20} color={colors.primaryGreen} />
+                            </View>
+                            <Text style={styles.quickTitle}>Watering Schedule</Text>
+                            <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
+                        </View>
+                        <Text style={styles.quickSubtitle}>Keep your plants on track</Text>
+                        <View style={styles.scheduleBottom}>
+                            <Text style={styles.scheduleCount}>3</Text>
+                            <Text style={styles.scheduleCountLabel}>plants{ '\n' }this week</Text>
+                            <Image source={plants[0].image} style={styles.scheduleImage} accessible={false} />
+                        </View>
+                    </Pressable>
+
+                    <Pressable
+                        style={({ pressed }) => [styles.quickCard, styles.tipsCard, pressed && styles.pressed]}
+                        accessibilityRole="button"
+                        accessibilityLabel="Read 5 tips for happier houseplants"
+                    // onPress={}
+                    >
+                        <View style={styles.quickCardHeader}>
+                            <View style={[styles.quickIcon, styles.tipsIcon]}>
+                                <Ionicons name="bulb-outline" size={21} color="#C88B15" />
+                            </View>
+                            <Text style={styles.quickTitle}>Tips for Healthy Plants</Text>
+                            <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
+                        </View>
+                        <Text style={styles.quickSubtitle}>Learn and grow together</Text>
+                        <View style={styles.tipPreview}>
+                            <Image source={plants[2].image} style={styles.tipImage} accessible={false} />
+                            <Text style={styles.tipText}>5 Tips for Happier Houseplants</Text>
+                            <Ionicons name="chevron-forward" size={13} color={colors.secondaryText} />
+                        </View>
+                    </Pressable>
+                </View>
             </ScrollView>
 
         </SafeAreaView>
@@ -334,25 +415,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    // searchBar: {
-    //     flexDirection: 'row',
-    //     alignItems: 'center',
-    //     gap: 10,
-    //     minHeight: 52,
-    //     paddingHorizontal: 15,
-    //     borderRadius: 27,
-    //     backgroundColor: colors.cardBackground,
-    //     borderWidth: 1,
-    //     borderColor: colors.border,
-    // },
-    // searchInput: {
-    //     flex: 1,
-    //     minWidth: 0,
-    //     paddingVertical: 14,
-    //     paddingHorizontal: 0,
-    //     fontSize: 13,
-    //     color: colors.mainText,
-    // },
+    searchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        minHeight: 52,
+        paddingHorizontal: 15,
+        borderRadius: 27,
+        backgroundColor: colors.cardBackground,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    searchInput: {
+        flex: 1,
+        minWidth: 0,
+        paddingVertical: 14,
+        paddingHorizontal: 0,
+        fontSize: 13,
+        color: colors.mainText,
+    },
     section: {
         gap: 12,
     },
