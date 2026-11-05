@@ -34,26 +34,6 @@ const plants = [
         statusBackground: colors.healthyBackground,
         wateringInfo: 'Water in 5 days',
     },
-    // {
-    //     id: 'snake-plant',
-    //     name: 'Snake Plant',
-    //     image: require('../../../assets/plants/snake-plant.jpg'),
-    //     status: 'Doing great',
-    //     statusIcon: 'leaf',
-    //     statusColor: colors.healthyText,
-    //     statusBackground: colors.healthyBackground,
-    //     wateringInfo: 'Water in 5 days',
-    // },
-    // {
-    //     id: 'snake-plant',
-    //     name: 'Snake Plant',
-    //     image: require('../../../assets/plants/snake-plant.jpg'),
-    //     status: 'Doing great',
-    //     statusIcon: 'leaf',
-    //     statusColor: colors.healthyText,
-    //     statusBackground: colors.healthyBackground,
-    //     wateringInfo: 'Water in 5 days',
-    // },
     {
         id: 'pothos',
         name: 'Pothos',
@@ -93,8 +73,7 @@ export default function HomeView() {
                     <Ionicons name="search-outline" size={22} color={colors.secondaryText} />
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="1470"
-                        // placeholder="Search plants, care tips, or problems..."
+                        placeholder="Search plants, care tips, or problems..."
                         placeholderTextColor={colors.secondaryText}
                         accessibilityLabel="Search plants, care tips"
                         returnKeyType="search"

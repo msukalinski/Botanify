@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeView from './components/home-view/HomeView';
 import Login from './components/login/Login';
 import Register from './components/register/Register';
+import CatalogView from './components/catalog-view/CatalogView';
 
 export default function App() {
 	return (
@@ -11,8 +12,9 @@ export default function App() {
 			<View style={styles.app}>
 				<StatusBar barStyle='dark-content' />
 				{/* <HomeView /> */}
+				<CatalogView />
 				{/* <Login /> */}
-				<Register />
+				{/* <Register /> */}
 			</View>
 		</SafeAreaProvider>
 	);

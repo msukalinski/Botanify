@@ -1,7 +1,7 @@
-import Ionicons from "@react-native-vector-icons/ionicons";
 import { useRef, useState } from "react";
 import {
     Keyboard,
+    KeyboardAvoidingView,
     Platform,
     Pressable,
     ScrollView,
@@ -10,10 +10,10 @@ import {
     TextInput,
     View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "@react-native-vector-icons/ionicons";
 
 import { colors } from "../../theme";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { KeyboardAvoidingView } from "react-native";
 
 export default function Register({
     onRegister,
