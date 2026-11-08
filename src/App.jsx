@@ -6,6 +6,7 @@ import Login from './components/login/Login';
 import Register from './components/register/Register';
 import CatalogView from './components/catalog-view/CatalogView';
 import DetailsView from './components/details-view/DetailsView';
+import CreatePlantView from './components/create-plant-view/CreatePlantView';
 
 export default function App() {
 	return (
@@ -14,7 +15,8 @@ export default function App() {
 				<StatusBar barStyle='dark-content' />
 				{/* <HomeView /> */}
 				{/* <CatalogView /> */}
-				<DetailsView />
+				{/* <DetailsView /> */}
+				<CreatePlantView />
 				{/* <Login /> */}
 				{/* <Register /> */}
 			</View>
