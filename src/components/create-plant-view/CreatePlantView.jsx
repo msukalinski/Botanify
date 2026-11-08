@@ -168,6 +168,15 @@ export default function CreatePlantView({
                                 label='Plant name'
                                 required
                                 icon="leaf-outline"
+                                placeholder="e.g. Monstera"
+                                value={values.name}
+                                onChangeText={(value) => changeHandler('name', value)}
+                                error={nameError}
+                                maxLength={80}
+                            />
+                            <PlantField
+                                label='Species (optional)'
+                                icon="flower-outline"
                                 placeholder="e.g. Monstera deliciosa"
                                 value={values.species}
                                 onChangeText={(value) => changeHandler('species', value)}
@@ -208,6 +217,7 @@ export default function CreatePlantView({
                                             pressed && styles.pressed,
                                         ]}
                                         onPress={() => changeWateringFrequency(-1)}
+                                        disabled={values.wateringFrequencyDays === 1}
                                         accessibilityRole="button"
                                         accessibilityLabel="Decrease days between watering"
                                         accessibilityState={{ disabled: values.wateringFrequencyDays === 1 }}
@@ -228,6 +238,7 @@ export default function CreatePlantView({
                                             pressed && styles.pressed,
                                         ]}
                                         onPress={() => changeWateringFrequency(1)}
+                                        disabled={values.wateringFrequencyDays === 30}
                                         accessibilityRole="button"
                                         accessibilityLabel="Increase days between watering"
                                         accessibilityState={{ disabled: values.wateringFrequencyDays === 30 }}
