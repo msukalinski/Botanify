@@ -15,10 +15,10 @@ export default function App() {
 			<View style={styles.app}>
 				<StatusBar barStyle='dark-content' />
 				{/* <HomeView /> */}
-				{/* <CatalogView /> */}
+				<CatalogView />
 				{/* <DetailsView /> */}
 				{/* <CreatePlantView /> */}
-				<EditPlantView />
+				{/* <EditPlantView /> */}
 				{/* <Login /> */}
 				{/* <Register /> */}
 			</View>

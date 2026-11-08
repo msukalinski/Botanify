@@ -283,7 +283,7 @@ function FilterChip({
 }) {
     return (
         <Pressable
-            style={styles.filterChip}
+            style={({pressed}) => [styles.filterChip, active && styles.filterChipActive, pressed && styles.pressed]}
             onPress={onPress}
             accessibilityRole="button"
             accessibilityLabel={label}
