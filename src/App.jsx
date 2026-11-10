@@ -9,6 +9,7 @@ import DetailsView from './components/details-view/DetailsView';
 import CreatePlantView from './components/create-plant-view/CreatePlantView';
 import EditPlantView from './components/edit-plant-view/EditPlantView';
 import RemindersView from './components/reminders-view/RemindersView';
+import ProfileView from './components/profile-view/ProfileView';
 
 export default function App() {
 	return (
@@ -18,7 +19,8 @@ export default function App() {
 				{/* <HomeView /> */}
 				{/* <CatalogView /> */}
 				{/* <DetailsView /> */}
-				<RemindersView />
+				{/* <RemindersView /> */}
+				<ProfileView />
 				{/* <CreatePlantView /> */}
 				{/* <EditPlantView /> */}
 				{/* <Login /> */}
