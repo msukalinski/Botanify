@@ -8,6 +8,7 @@ import CatalogView from './components/catalog-view/CatalogView';
 import DetailsView from './components/details-view/DetailsView';
 import CreatePlantView from './components/create-plant-view/CreatePlantView';
 import EditPlantView from './components/edit-plant-view/EditPlantView';
+import RemindersView from './components/reminders-view/RemindersView';
 
 export default function App() {
 	return (
@@ -15,8 +16,9 @@ export default function App() {
 			<View style={styles.app}>
 				<StatusBar barStyle='dark-content' />
 				{/* <HomeView /> */}
-				<CatalogView />
+				{/* <CatalogView /> */}
 				{/* <DetailsView /> */}
+				<RemindersView />
 				{/* <CreatePlantView /> */}
 				{/* <EditPlantView /> */}
 				{/* <Login /> */}
