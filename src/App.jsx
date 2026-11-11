@@ -11,6 +11,7 @@ import EditPlantView from './components/edit-plant-view/EditPlantView';
 import RemindersView from './components/reminders-view/RemindersView';
 import ProfileView from './components/profile-view/ProfileView';
 import LoadingIndicator from './components/loading-indicator/LoadingIndicator';
+import ErrorMessage from './components/error-message/ErrorMessage';
 
 export default function App() {
 	return (
@@ -26,7 +27,8 @@ export default function App() {
 				{/* <EditPlantView /> */}
 				{/* <Login /> */}
 				{/* <Register /> */}
-				<LoadingIndicator />
+				{/* <LoadingIndicator /> */}
+				<ErrorMessage />
 			</View>
 		</SafeAreaProvider>
 	);
