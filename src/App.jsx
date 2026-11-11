@@ -12,6 +12,7 @@ import RemindersView from './components/reminders-view/RemindersView';
 import ProfileView from './components/profile-view/ProfileView';
 import LoadingIndicator from './components/loading-indicator/LoadingIndicator';
 import ErrorMessage from './components/error-message/ErrorMessage';
+import EmptyState from './components/empty-state/EmptyState';
 
 export default function App() {
 	return (
@@ -28,7 +29,8 @@ export default function App() {
 				{/* <Login /> */}
 				{/* <Register /> */}
 				{/* <LoadingIndicator /> */}
-				<ErrorMessage />
+				{/* <ErrorMessage /> */}
+				<EmptyState />
 			</View>
 		</SafeAreaProvider>
 	);
