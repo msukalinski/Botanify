@@ -1,6 +1,5 @@
 import { StatusBar, StyleSheet, Text, View } from 'react-native';
 import { colors } from './theme';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeView from './components/home-view/HomeView';
 import Login from './components/login/Login';
 import Register from './components/register/Register';
@@ -13,26 +12,17 @@ import ProfileView from './components/profile-view/ProfileView';
 import LoadingIndicator from './components/loading-indicator/LoadingIndicator';
 import ErrorMessage from './components/error-message/ErrorMessage';
 import EmptyState from './components/empty-state/EmptyState';
+import { NavigationContainer } from '@react-navigation/native';
+import RootNavigatior from './navigation/RootNavigatior';
 
 export default function App() {
 	return (
-		<SafeAreaProvider>
-			<View style={styles.app}>
-				<StatusBar barStyle='dark-content' />
-				{/* <HomeView /> */}
-				{/* <CatalogView /> */}
-				{/* <DetailsView /> */}
-				{/* <RemindersView /> */}
-				{/* <ProfileView /> */}
-				{/* <CreatePlantView /> */}
-				{/* <EditPlantView /> */}
-				{/* <Login /> */}
-				{/* <Register /> */}
-				{/* <LoadingIndicator /> */}
-				{/* <ErrorMessage /> */}
-				<EmptyState />
-			</View>
-		</SafeAreaProvider>
+		<>
+			<StatusBar barStyle='dark-content' />
+			<NavigationContainer >
+				<RootNavigatior />
+			</NavigationContainer>
+		</>
 	);
 }
 

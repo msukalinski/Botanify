@@ -96,7 +96,7 @@ const tabs = [
 
 export default function CatalogView({
     plants = samplePlants,
-    showBottomNavigation = true,
+    showBottomNavigation = false,
     onNavigate,
     onPlantPress,
     onPlantMenu,
