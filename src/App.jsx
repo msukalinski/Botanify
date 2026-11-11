@@ -10,6 +10,7 @@ import CreatePlantView from './components/create-plant-view/CreatePlantView';
 import EditPlantView from './components/edit-plant-view/EditPlantView';
 import RemindersView from './components/reminders-view/RemindersView';
 import ProfileView from './components/profile-view/ProfileView';
+import LoadingIndicator from './components/loading-indicator/LoadingIndicator';
 
 export default function App() {
 	return (
@@ -20,11 +21,12 @@ export default function App() {
 				{/* <CatalogView /> */}
 				{/* <DetailsView /> */}
 				{/* <RemindersView /> */}
-				<ProfileView />
+				{/* <ProfileView /> */}
 				{/* <CreatePlantView /> */}
 				{/* <EditPlantView /> */}
 				{/* <Login /> */}
 				{/* <Register /> */}
+				<LoadingIndicator />
 			</View>
 		</SafeAreaProvider>
 	);
