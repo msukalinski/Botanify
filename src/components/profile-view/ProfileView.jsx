@@ -14,7 +14,6 @@ import { colors } from "../../theme";
 export default function ProfileView({
     profile = sampleProfile,
     stats = sampleStats,
-    showBottomNavigation = true,
     onNavigate,
     onEditProfile,
     onLogout,
@@ -37,10 +36,7 @@ export default function ProfileView({
         <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
             <ScrollView
                 style={styles.scroll}
-                contentContainerStyle={[
-                    styles.content,
-                    !showBottomNavigation && { paddingBottom: 24 + insets.bottom },
-                ]}
+                contentContainerStyle={styles.content}
                 contentInsetAdjustmentBehavior="never"
                 showsVerticalScrollIndicator={false}
             >
@@ -179,33 +175,6 @@ export default function ProfileView({
                 </View>
             </ScrollView>
 
-            {showBottomNavigation && (
-                <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-                    <View style={styles.tabRow}>
-                        {tabs.map((tab) => (
-                            <Pressable
-                                key={tab.route}
-                                style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
-                                onPress={() => onNavigate?.(tab.route)}
-                                accessibilityRole="tab"
-                                accessibilityLabel={tab.label}
-                                accessibilityState={{ selected: tab.route === 'Profile' }}
-                            >
-                                <View style={tab.isAdd ? styles.addButton : styles.tabIcon}>
-                                    <Ionicons
-                                        name={tab.icon}
-                                        size={tab.isAdd ? 30 : 24}
-                                        color={tab.isAdd ? '#FFFFFF' : tab.route === 'Profile' ? colors.primaryGreen : colors.secondaryText}
-                                    />
-                                </View>
-                                <Text style={[styles.tabLabel, tab.route === 'Profile' && styles.tabLabelActive]}>
-                                    {tab.label}
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                </View>
-            )}
         </SafeAreaView >
     );
 }
@@ -614,54 +583,6 @@ const styles = StyleSheet.create({
         lineHeight: 18,
         color: colors.secondaryText,
         textAlign: 'center'
-    },
-    bottomBar: {
-        backgroundColor: '#FCFDF9',
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        paddingTop: 8,
-        paddingHorizontal: 8,
-    },
-    tabRow: {
-        width: '100%',
-        maxWidth: 560,
-        alignSelf: 'center',
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-    },
-    tab: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        minHeight: 54,
-        gap: 5,
-    },
-    tabIcon: {
-        height: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    addButton: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        marginTop: -25,
-        backgroundColor: '#7B9D66',
-        borderWidth: 3,
-        borderColor: '#FCFDF9',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    tabLabel: {
-        fontSize: 10,
-        lineHeight: 14,
-        color: colors.secondaryText,
-    },
-    tabLabelActive: {
-        fontWeight: '700',
-        color: colors.primaryGreen,
     },
     pressed: {
         opacity: 0.7,

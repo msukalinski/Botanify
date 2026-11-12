@@ -13,16 +13,17 @@ import LoadingIndicator from './components/loading-indicator/LoadingIndicator';
 import ErrorMessage from './components/error-message/ErrorMessage';
 import EmptyState from './components/empty-state/EmptyState';
 import { NavigationContainer } from '@react-navigation/native';
-import RootNavigatior from './navigation/RootNavigatior';
+import MainTabs from './navigation/MainTabs';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
 	return (
-		<>
+		<SafeAreaProvider>
 			<StatusBar barStyle='dark-content' />
 			<NavigationContainer >
-				<RootNavigatior />
+				<MainTabs />
 			</NavigationContainer>
-		</>
+		</SafeAreaProvider>
 	);
 }
 

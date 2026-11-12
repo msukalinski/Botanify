@@ -96,7 +96,6 @@ const tabs = [
 
 export default function CatalogView({
     plants = samplePlants,
-    showBottomNavigation = false,
     onNavigate,
     onPlantPress,
     onPlantMenu,
@@ -243,34 +242,6 @@ export default function CatalogView({
                 keyboardDismissMode="on-drag"
             />
 
-            {showBottomNavigation && (
-                <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
-                    <View style={styles.tabRow}>
-                        {tabs.map((tab) => (
-                            <Pressable
-                                key={tab.route}
-                                style={({ pressed }) => [styles.tab, pressed && styles.pressed]}
-                                onPress={() => onNavigate?.(tab.route)}
-                                accessibilityRole="tab"
-                                accessibilityLabel={tab.label}
-                                accessibilityState={{ selected: tab.route === 'Plants' }}
-                            >
-                                <View style={tab.isAdd ? styles.addButton : styles.tabIcon}>
-                                    <Ionicons
-                                        name={tab.icon}
-                                        size={tab.isAdd ? 30 : 24}
-                                        color={tab.isAdd ? '#FFFFFF' : tab.route === 'Plants' ? colors.primaryGreen : colors.secondaryText}
-                                    />
-                                </View>
-                                <Text style={[styles.tabLabel, tab.route === 'Plants' && styles.tabLabelActive]}>
-                                    {tab.label}
-                                </Text>
-                            </Pressable>
-                        ))}
-                    </View>
-                </View>
-            )}
-
         </SafeAreaView>
     );
 }
@@ -283,7 +254,7 @@ function FilterChip({
 }) {
     return (
         <Pressable
-            style={({pressed}) => [styles.filterChip, active && styles.filterChipActive, pressed && styles.pressed]}
+            style={({ pressed }) => [styles.filterChip, active && styles.filterChipActive, pressed && styles.pressed]}
             onPress={onPress}
             accessibilityRole="button"
             accessibilityLabel={label}
@@ -624,54 +595,6 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: colors.primaryGreen,
         textAlign: 'center',
-    },
-    bottomBar: {
-        backgroundColor: '#FCFDF9',
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        paddingTop: 8,
-        paddingHorizontal: 8,
-    },
-    tabRow: {
-        width: '100%',
-        maxWidth: 560,
-        alignSelf: 'center',
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-    },
-    tab: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        minHeight: 54,
-        gap: 5,
-    },
-    tabIcon: {
-        height: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    addButton: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        marginTop: -25,
-        backgroundColor: '#7B9D66',
-        borderWidth: 3,
-        borderColor: '#FCFDF9',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    tabLabel: {
-        fontSize: 10,
-        lineHeight: 14,
-        color: colors.secondaryText,
-    },
-    tabLabelActive: {
-        fontWeight: '700',
-        color: colors.primaryGreen,
     },
     pressed: {
         opacity: 0.7,
