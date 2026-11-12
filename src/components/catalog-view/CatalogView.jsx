@@ -95,11 +95,14 @@ const tabs = [
 ];
 
 export default function CatalogView({
+    navigation,
     plants = samplePlants,
     onNavigate,
     onPlantPress,
     onPlantMenu,
 }) {
+
+
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const insets = useSafeAreaInsets();
@@ -205,7 +208,7 @@ export default function CatalogView({
                     <CatalogPlantCard
                         plant={item}
                         width={cardWidth}
-                        onPress={() => onPlantPress?.(item.id)}
+                        onPress={() => navigation.navigate('PlantDetails', { plantId: item.id })}
                         onMenuPress={() => onPlantMenu?.(item.id)}
                     />
                 )}

@@ -37,8 +37,8 @@ const lightOptions = [
 ];
 
 export default function EditPlantView({
+    navigation,
     plant = samplePlant,
-    onBack,
     onCancel,
     onTakePhoto,
     onChoosePhoto,
@@ -100,6 +100,10 @@ export default function EditPlantView({
             photoSource,
         });
     };
+
+    const onBack = () => {
+        return navigation.goBack()
+    }
 
     return (
         <SafeAreaView style={styles.screen}>

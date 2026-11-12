@@ -47,9 +47,9 @@ const plantStatuses = {
 };
 
 export default function DetailsView({
+    navigation,
+    route,
     plant = samplePlant,
-    onBack,
-    onEdit,
     onMarkWatered,
     onOpenReminders,
     onDeleteRequest,
@@ -60,13 +60,14 @@ export default function DetailsView({
     const wateringCycle = plant.wateringFrequencyDays === 1
         ? 'Every day'
         : `Every ${plant.wateringFrequencyDays} days`;
+    const { plantId } = route.params;
 
     return (
         <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
             <View style={styles.toolbar}>
                 <Pressable
                     style={({ pressed }) => [styles.toolbarButton, pressed && styles.pressed]}
-                    onPress={onBack}
+                    onPress={() => navigation.goBack()}
                     accessibilityRole="button"
                     accessibilityLabel="Back to plants"
                 >
@@ -75,7 +76,7 @@ export default function DetailsView({
                 <Text style={styles.toolbarTitle}>Plant details</Text>
                 <Pressable
                     style={({ pressed }) => [styles.toolbarButton, pressed && styles.pressed]}
-                    onPress={() => onEdit?.(plant.id)}
+                    onPress={() => navigation.navigate('EditPlant')}
                     accessibilityRole="button"
                     accessibilityLabel="Edit plant"
                 >

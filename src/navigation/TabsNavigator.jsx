@@ -11,7 +11,7 @@ import getBottomTabOptions from "./bottomTabOptions";
 
 const Tabs = createBottomTabNavigator();
 
-export default function MainTabs() {
+export default function TabsNavigator() {
     const insets = useSafeAreaInsets();
 
     return (
