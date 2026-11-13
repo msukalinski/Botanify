@@ -70,18 +70,9 @@ const sampleReminders = [
     },
 ];
 
-const tabs = [
-    { label: 'Home', route: 'Home', icon: 'home-outline' },
-    { label: 'Plants', route: 'Plants', icon: 'leaf-outline' },
-    { label: 'Add', route: 'AddPlant', icon: 'add', isAdd: true },
-    { label: 'Reminders', route: 'Reminders', icon: 'notifications' },
-    { label: 'Profile', route: 'Profile', icon: 'person-outline' },
-];
-
 export default function RemindersView({
+    navigation,
     reminders = sampleReminders,
-    onNavigate,
-    onPlantPress
 }) {
     const insets = useSafeAreaInsets();
     const [wateredIds, setWateredIds] = useState([]);
@@ -125,7 +116,7 @@ export default function RemindersView({
                         title="Your care routine starts here"
                         description="Add a plant and set up its watering routine to see your reminders here."
                         actionLabel="Add your first plant"
-                        onAction={() => onNavigate?.('AddPlant')}
+                        onAction={() => navigation.navigate('AddPlant')}
                     />
                 ) : (
                     <>
@@ -188,7 +179,7 @@ export default function RemindersView({
                                         key={reminder.id}
                                         reminder={reminder}
                                         completed={wateredIds.includes(reminder.id)}
-                                        onOpen={() => onPlantPress?.(reminder.plantId)}
+                                        onOpen={() => navigation.navigate('PlantDetails', { plantId: reminder.id })}
                                         onToggleWatered={() => toggleWateredHandler(reminder.id)}
                                     />
                                 ))
@@ -212,7 +203,7 @@ export default function RemindersView({
                                     <ReminderCard
                                         key={reminder.id}
                                         reminder={reminder}
-                                        onOpen={() => onPlantPress?.(reminder.plantId)}
+                                        onOpen={() => navigation.navigate('PlantDetails', { plantId: reminder.id })}
                                     />
                                 ))
                             ) : (

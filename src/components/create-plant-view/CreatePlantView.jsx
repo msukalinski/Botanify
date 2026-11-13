@@ -30,7 +30,7 @@ const wateredOptions = [
 ];
 
 export default function CreatePlantView({
-    onBack,
+    navigation,
     onTakePhoto,
     onChoosePhoto,
     onAddPlant,
@@ -88,7 +88,7 @@ export default function CreatePlantView({
             <View style={styles.toolbar}>
                 <Pressable
                     style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
-                    onPress={onBack}
+                    onPress={() => navigation.navigate('Plants')}
                     accessibilityRole="button"
                     accessibilityLabel="Go back"
                 >

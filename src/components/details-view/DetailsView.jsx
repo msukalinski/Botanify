@@ -76,7 +76,7 @@ export default function DetailsView({
                 <Text style={styles.toolbarTitle}>Plant details</Text>
                 <Pressable
                     style={({ pressed }) => [styles.toolbarButton, pressed && styles.pressed]}
-                    onPress={() => navigation.navigate('EditPlant')}
+                    onPress={() => navigation.navigate('EditPlant', { plantId })}
                     accessibilityRole="button"
                     accessibilityLabel="Edit plant"
                 >
@@ -85,7 +85,7 @@ export default function DetailsView({
             </View>
 
             <ScrollView
-                style={styles.ScrollView}
+                style={styles.scroll}
                 contentContainerStyle={[styles.content, { paddingBottom: 28 + insets.bottom }]}
                 contentInsetAdjustmentBehavior="never"
                 showsVerticalScrollIndicator={false}
