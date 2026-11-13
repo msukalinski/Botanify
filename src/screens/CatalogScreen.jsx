@@ -13,9 +13,10 @@ import {
 import { useState } from "react";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { colors } from "../../theme";
+import samplePlants from "../data/plants";
 
-import samplePlants from "../../data/plants";
+import { colors } from "../theme";
+import FilterChip from "../components/catalog/FilterChip";
 
 // const samplePlants = [
 //     {
@@ -97,7 +98,7 @@ const tabs = [
     { label: 'Profile', route: 'Profile', icon: 'person-outline' },
 ];
 
-export default function CatalogView({
+export default function CatalogScreen({
     navigation,
     plants = samplePlants,
     onPlantMenu,
@@ -250,26 +251,6 @@ export default function CatalogView({
     );
 }
 
-function FilterChip({
-    label,
-    icon,
-    active,
-    onPress,
-}) {
-    return (
-        <Pressable
-            style={({ pressed }) => [styles.filterChip, active && styles.filterChipActive, pressed && styles.pressed]}
-            onPress={onPress}
-            accessibilityRole="button"
-            accessibilityLabel={label}
-            accessibilityState={{ selected: active }}
-        >
-            <Ionicons name={icon} size={16} color={active ? '#FFFFFF' : colors.primaryGreen} />
-            <Text style={[styles.filterText, active && styles.filterTextActive]}>{label}</Text>
-        </Pressable>
-    );
-}
-
 function CatalogPlantCard({
     plant,
     width,
@@ -406,32 +387,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 10,
-    },
-    filterChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 44,
-        gap: 6,
-        paddingHorizontal: 14,
-        paddingVertical: 10,
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.cardBackground,
-    },
-    filterChipActive: {
-        borderColor: colors.primaryGreen,
-        backgroundColor: colors.primaryGreen,
-    },
-    filterText: {
-        fontSize: 13,
-        lineHeight: 18,
-        fontWeight: '600',
-        color: colors.mainText,
-    },
-    filterTextActive: {
-        color: '#FFFFFF',
     },
     resultsRow: {
         flexDirection: 'row',
