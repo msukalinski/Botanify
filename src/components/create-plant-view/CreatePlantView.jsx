@@ -318,7 +318,7 @@ export default function CreatePlantView({
 
                     <Pressable
                         style={({ pressed }) => [styles.submitButton, pressed && styles.pressed]}
-                        onPress={() => addPlantHandler}
+                        onPress={addPlantHandler}
                         accessibilityRole="button"
                         accessibilityLabel="Add plant"
                     >

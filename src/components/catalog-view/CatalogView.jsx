@@ -228,7 +228,7 @@ export default function CatalogView({
                                 : 'Try another name or clear your search and filters.'}
                         </Text>
                         <Pressable
-                            style={({ pressed }) => { styles.emptyButton, pressed && styles.pressed }}
+                            style={({ pressed }) => [styles.emptyButton, pressed && styles.pressed]}
                             onPress={plants.length === 0 ? () => navigation.navigate('AddPlant') : clearFilters}
                             accessibilityRole="button"
                         >

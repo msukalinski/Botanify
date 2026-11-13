@@ -179,7 +179,7 @@ export default function RemindersView({
                                         key={reminder.id}
                                         reminder={reminder}
                                         completed={wateredIds.includes(reminder.id)}
-                                        onOpen={() => navigation.navigate('PlantDetails', { plantId: reminder.id })}
+                                        onOpen={() => navigation.navigate('PlantDetails', { plantId: reminder.plantId })}
                                         onToggleWatered={() => toggleWateredHandler(reminder.id)}
                                     />
                                 ))
@@ -203,7 +203,7 @@ export default function RemindersView({
                                     <ReminderCard
                                         key={reminder.id}
                                         reminder={reminder}
-                                        onOpen={() => navigation.navigate('PlantDetails', { plantId: reminder.id })}
+                                        onOpen={() => navigation.navigate('PlantDetails', { plantId: reminder.plantId })}
                                     />
                                 ))
                             ) : (
