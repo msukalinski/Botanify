@@ -46,15 +46,9 @@ const plants = [
     },
 ];
 
-const tabs = [
-    { label: 'Home', route: 'Home', icon: 'home' },
-    { label: 'Plants', route: 'Plants', icon: 'leaf-outline' },
-    { label: 'Add', route: 'AddPlant', icon: 'add', isAdd: true },
-    { label: 'Reminders', route: 'Reminders', icon: 'notifications-outline' },
-    { label: 'Profile', route: 'Profile', icon: 'person-outline' },
-];
-
-export default function HomeView() {
+export default function HomeView({
+    navigation
+}) {
     const insets = useSafeAreaInsets();
     const { width, fontScale } = useWindowDimensions();
     const contentWidth = Math.min(width - insets.left - insets.right, 560) - 36;
@@ -85,7 +79,7 @@ export default function HomeView() {
                     <SectionHeader
                         title="My Plants"
                         actionLabel="View all"
-                    // onPress={}
+                        onPress={() => navigation.navigate('Plants')}
                     />
                     <ScrollView
                         horizontal
@@ -109,7 +103,7 @@ export default function HomeView() {
                     <SectionHeader
                         title="Today's Care"
                         actionLabel="See all"
-                    // onPress={ }
+                        onPress={() => navigation.navigate('Reminders')}
                     />
 
                     <View style={styles.careBody}>
@@ -146,7 +140,7 @@ export default function HomeView() {
                         style={({ pressed }) => [styles.quickCard, styles.scheduleCard, pressed && styles.pressed]}
                         accessibilityRole="button"
                         accessibilityLabel="Watering schedule, 3 plants this week"
-                    // onPress={}
+                        onPress={() => navigation.navigate('Reminders')}
                     >
                         <View style={styles.quickCardHeader}>
                             <View style={[styles.quickIcon, styles.scheduleIcon]}>
@@ -158,7 +152,7 @@ export default function HomeView() {
                         <Text style={styles.quickSubtitle}>Keep your plants on track</Text>
                         <View style={styles.scheduleBottom}>
                             <Text style={styles.scheduleCount}>3</Text>
-                            <Text style={styles.scheduleCountLabel}>plants{ '\n' }this week</Text>
+                            <Text style={styles.scheduleCountLabel}>plants{'\n'}this week</Text>
                             <Image source={plants[0].image} style={styles.scheduleImage} accessible={false} />
                         </View>
                     </Pressable>
@@ -259,7 +253,9 @@ function PlantCard({
                     accessibilityRole="button"
                     accessibilityLabel={`More options for ${plant.name}`}
                 >
-                    <Ionicons name="ellipsis-horizontal" size={20} color={colors.mainText} />
+                    <View style={styles.menuBackground}>
+                        <Ionicons name="ellipsis-horizontal" size={18} color={colors.mainText} />
+                    </View>
                 </Pressable>
             </View>
             <Pressable
@@ -480,6 +476,14 @@ const styles = StyleSheet.create({
         right: 1,
         width: 44,
         height: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    menuBackground: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#FFFFFFDD',
         alignItems: 'center',
         justifyContent: 'center',
     },
