@@ -97,8 +97,6 @@ const tabs = [
 export default function CatalogView({
     navigation,
     plants = samplePlants,
-    onNavigate,
-    onPlantPress,
     onPlantMenu,
 }) {
 
@@ -135,7 +133,7 @@ export default function CatalogView({
                     </View>
                     <Pressable
                         style={({ pressed }) => [styles.headerAddButton, pressed && styles.pressed]}
-                        onPress={() => onNavigate?.('AddPlant')}
+                        onPress={() => navigation.navigate('AddPlant')}
                         accessibilityRole="button"
                         accessibilityLabel="Add plant"
                     >
@@ -231,7 +229,7 @@ export default function CatalogView({
                         </Text>
                         <Pressable
                             style={({ pressed }) => { styles.emptyButton, pressed && styles.pressed }}
-                            onPress={plants.length === 0 ? () => onNavigate?.('AddPlant') : clearFilters}
+                            onPress={plants.length === 0 ? () => navigation.navigate('AddPlant') : clearFilters}
                             accessibilityRole="button"
                         >
                             <Text style={styles.emptyButtonText}>
