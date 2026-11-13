@@ -9,21 +9,23 @@ import {
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@react-native-vector-icons/ionicons";
 
+import samplePlants from "../../data/plants";
+
 import { colors } from "../../theme";
 
-const samplePlant = {
-    id: 'monstera',
-    name: 'Monstera',
-    species: 'Monstera deliciosa',
-    location: 'Living room',
-    image: require('../../../assets/plants/monstera.jpg'),
-    status: 'water',
-    lastWateredLabel: '5 days ago',
-    nextWateringLabel: 'Today',
-    wateringFrequencyDays: 5,
-    lightPreference: 'Bright indirect light',
-    notes: 'A gift from a friend. This plant sits beside the living-room window and is the first member of my green collection.',
-};
+// const samplePlant = {
+//     id: 'monstera',
+//     name: 'Monstera',
+//     species: 'Monstera deliciosa',
+//     location: 'Living room',
+//     image: require('../../../assets/plants/monstera.jpg'),
+//     status: 'water',
+//     lastWateredLabel: '5 days ago',
+//     nextWateringLabel: 'Today',
+//     wateringFrequencyDays: 5,
+//     lightPreference: 'Bright indirect light',
+//     notes: 'A gift from a friend. This plant sits beside the living-room window and is the first member of my green collection.',
+// };
 
 const plantStatuses = {
     water: {
@@ -49,18 +51,20 @@ const plantStatuses = {
 export default function DetailsView({
     navigation,
     route,
-    plant = samplePlant,
     onMarkWatered,
     onOpenReminders,
     onDeleteRequest,
 }) {
     const insets = useSafeAreaInsets();
+
+    const { plantId } = route.params;
+    const plant = samplePlants.find((plant) => plant.id === plantId);
+
     const status = plantStatuses[plant.status];
     const needsWater = plant.status === 'water';
     const wateringCycle = plant.wateringFrequencyDays === 1
         ? 'Every day'
         : `Every ${plant.wateringFrequencyDays} days`;
-    const { plantId } = route.params;
 
     return (
         <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>

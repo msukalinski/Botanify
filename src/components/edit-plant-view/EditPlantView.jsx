@@ -16,19 +16,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@react-native-vector-icons/ionicons";
 
 import { colors } from "../../theme";
+import samplePlants from "../../data/plants";
 
-const samplePlant = {
-    id: 'monstera',
-    name: 'Monstera',
-    species: 'Monstera deliciosa',
-    location: 'Living room',
-    image: require('../../../assets/plants/monstera.jpg'),
-    wateringFrequencyDays: 5,
-    lastWateredDaysAgo: 5,
-    lightPreference: 'Bright indirect light',
-    remindersEnabled: true,
-    notes: 'A gift from a friend. This plant sits beside the living-room window and is the first member of my green collection.',
-};
+// const samplePlant = {
+//     id: 'monstera',
+//     name: 'Monstera',
+//     species: 'Monstera deliciosa',
+//     location: 'Living room',
+//     image: require('../../../assets/plants/monstera.jpg'),
+//     wateringFrequencyDays: 5,
+//     lastWateredDaysAgo: 5,
+//     lightPreference: 'Bright indirect light',
+//     remindersEnabled: true,
+//     notes: 'A gift from a friend. This plant sits beside the living-room window and is the first member of my green collection.',
+// };
 
 const lightOptions = [
     { label: 'Low light', value: 'Low light', icon: 'cloud-outline' },
@@ -37,14 +38,19 @@ const lightOptions = [
 ];
 
 export default function EditPlantView({
+    route,
     navigation,
-    plant = samplePlant,
+    // plant = samplePlant,
     onCancel,
     onTakePhoto,
     onChoosePhoto,
     onSaveChanges,
-    photoSource = plant.image ?? null,
 }) {
+    const { plantId } = route.params;
+    const plant = samplePlants.find((plant) => plant.id === plantId);
+
+    const photoSource = plant.image ?? null;
+
     const [values, setValues] = useState({
         name: plant.name ?? '',
         species: plant.species ?? '',

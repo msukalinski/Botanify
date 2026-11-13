@@ -10,60 +10,63 @@ import {
     useWindowDimensions,
     View,
 } from "react-native";
-import { colors } from "../../theme";
 import { useState } from "react";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
-const samplePlants = [
-    {
-        id: 'monstera',
-        name: 'Monstera',
-        location: 'Living room',
-        image: require('../../../assets/plants/monstera.jpg'),
-        status: 'water',
-        wateringInfo: 'Last watered 5 days ago',
-    },
-    {
-        id: 'snake-plant',
-        name: 'Snake Plant',
-        location: 'Bedroom',
-        image: require('../../../assets/plants/snake-plant.jpg'),
-        status: 'healthy',
-        wateringInfo: 'Water in 5 days',
-    },
-    {
-        id: 'pothos',
-        name: 'Pothos',
-        location: 'Bookshelf',
-        image: require('../../../assets/plants/pothos.jpg'),
-        status: 'light',
-        wateringInfo: 'Last watered 2 days ago',
-    },
-    {
-        id: 'bedroom-monstera',
-        name: 'Monstera',
-        location: 'Bedroom',
-        image: require('../../../assets/plants/monstera.jpg'),
-        status: 'healthy',
-        wateringInfo: 'Water in 3 days',
-    },
-    {
-        id: 'office-snake-plant',
-        name: 'Snake Plant',
-        location: 'Office',
-        image: require('../../../assets/plants/snake-plant.jpg'),
-        status: 'water',
-        wateringInfo: 'Water today',
-    },
-    {
-        id: 'kitchen-pothos',
-        name: 'Pothos',
-        location: 'Kitchen',
-        image: require('../../../assets/plants/pothos.jpg'),
-        status: 'healthy',
-        wateringInfo: 'Water in 4 days',
-    },
-];
+import { colors } from "../../theme";
+
+import samplePlants from "../../data/plants";
+
+// const samplePlants = [
+//     {
+//         id: 'monstera',
+//         name: 'Monstera',
+//         location: 'Living room',
+//         image: require('../../../assets/plants/monstera.jpg'),
+//         status: 'water',
+//         wateringInfo: 'Last watered 5 days ago',
+//     },
+//     {
+//         id: 'snake-plant',
+//         name: 'Snake Plant',
+//         location: 'Bedroom',
+//         image: require('../../../assets/plants/snake-plant.jpg'),
+//         status: 'healthy',
+//         wateringInfo: 'Water in 5 days',
+//     },
+//     {
+//         id: 'pothos',
+//         name: 'Pothos',
+//         location: 'Bookshelf',
+//         image: require('../../../assets/plants/pothos.jpg'),
+//         status: 'light',
+//         wateringInfo: 'Last watered 2 days ago',
+//     },
+//     {
+//         id: 'bedroom-monstera',
+//         name: 'Monstera',
+//         location: 'Bedroom',
+//         image: require('../../../assets/plants/monstera.jpg'),
+//         status: 'healthy',
+//         wateringInfo: 'Water in 3 days',
+//     },
+//     {
+//         id: 'office-snake-plant',
+//         name: 'Snake Plant',
+//         location: 'Office',
+//         image: require('../../../assets/plants/snake-plant.jpg'),
+//         status: 'water',
+//         wateringInfo: 'Water today',
+//     },
+//     {
+//         id: 'kitchen-pothos',
+//         name: 'Pothos',
+//         location: 'Kitchen',
+//         image: require('../../../assets/plants/pothos.jpg'),
+//         status: 'healthy',
+//         wateringInfo: 'Water in 4 days',
+//     },
+// ];
 
 const statusStyles = {
     water: {
