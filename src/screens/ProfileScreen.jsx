@@ -16,6 +16,7 @@ import MenuRow from '../components/profile/MenuRow';
 import { colors } from '../theme';
 
 export default function ProfileScreen({
+    navigation,
     profile = sampleProfile,
     stats = sampleStats,
     onNavigate,
@@ -150,13 +151,13 @@ export default function ProfileScreen({
                             icon="leaf-outline"
                             title="My plants"
                             subtitle={plantCount + (plantCount === 1 ? ' plant in your collection' : ' plants in your collection')}
-                            onPress={() => onNavigate?.('Plants')}
+                            onPress={() => navigation.navigate('Plants')}
                         />
                         <MenuRow
                             icon="notifications-outline"
                             title="Watering reminders"
                             subtitle="Keep your care routine close"
-                            onPress={() => onNavigate?.('Reminders')}
+                            onPress={() => navigation.navigate('Reminders')}
                             last
                         />
                     </View>
