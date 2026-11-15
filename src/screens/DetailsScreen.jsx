@@ -1,31 +1,22 @@
+import Ionicons from '@react-native-vector-icons/ionicons';
 import {
     Image,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
-    View
-} from "react-native";
-import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
-import Ionicons from "@react-native-vector-icons/ionicons";
+    View,
+} from 'react-native';
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
-import samplePlants from "../../data/plants";
+import CareTile from '../components/details/CareTile';
 
-import { colors } from "../../theme";
+import samplePlants from '../data/plants';
 
-// const samplePlant = {
-//     id: 'monstera',
-//     name: 'Monstera',
-//     species: 'Monstera deliciosa',
-//     location: 'Living room',
-//     image: require('../../../assets/plants/monstera.jpg'),
-//     status: 'water',
-//     lastWateredLabel: '5 days ago',
-//     nextWateringLabel: 'Today',
-//     wateringFrequencyDays: 5,
-//     lightPreference: 'Bright indirect light',
-//     notes: 'A gift from a friend. This plant sits beside the living-room window and is the first member of my green collection.',
-// };
+import { colors } from '../theme';
 
 const plantStatuses = {
     water: {
@@ -48,7 +39,7 @@ const plantStatuses = {
     },
 };
 
-export default function DetailsView({
+export default function DetailsScreen({
     navigation,
     route,
     onMarkWatered,
@@ -214,24 +205,6 @@ export default function DetailsView({
                 </Pressable>
             </ScrollView>
         </SafeAreaView>
-    );
-}
-
-function CareTile({
-    icon,
-    iconColor,
-    iconBackground,
-    label,
-    value,
-}) {
-    return (
-        <View style={styles.careTile}>
-            <View style={[styles.careTileIcon, { backgroundColor: iconBackground }]} accessible={false}>
-                <Ionicons name={icon} size={22} color={iconColor} />
-            </View>
-            <Text style={styles.careTileLabel}>{label}</Text>
-            <Text style={styles.careTileValue}>{value}</Text>
-        </View>
     );
 }
 
@@ -437,36 +410,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'stretch',
         gap: 12,
-    },
-    careTile: {
-        flex: 1,
-        minWidth: 0,
-        minHeight: 145,
-        padding: 14,
-        gap: 9,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.cardBackground,
-    },
-    careTileIcon: {
-        width: 37,
-        height: 37,
-        borderRadius: 13,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 2,
-    },
-    careTileLabel: {
-        fontSize: 12,
-        lineHeight: 17,
-        color: colors.secondaryText,
-    },
-    careTileValue: {
-        fontSize: 14,
-        lineHeight: 20,
-        fontWeight: '600',
-        color: colors.mainText,
     },
     notesCard: {
         padding: 16,

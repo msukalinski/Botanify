@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from 'react';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import {
     Image,
     Keyboard,
@@ -9,13 +10,29 @@ import {
     StyleSheet,
     Switch,
     Text,
-    TextInput,
-    View
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Ionicons from "@react-native-vector-icons/ionicons";
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors } from "../../theme";
+import PlantField from '../components/plant-form/PlantField';
+import Choice from '../components/plant-form/Choice';
+
+import samplePlants from '../data/plants';
+
+import { colors } from '../theme';
+
+// const samplePlant = {
+//     id: 'monstera',
+//     name: 'Monstera',
+//     species: 'Monstera deliciosa',
+//     location: 'Living room',
+//     image: require('../../../assets/plants/monstera.jpg'),
+//     wateringFrequencyDays: 5,
+//     lastWateredDaysAgo: 5,
+//     lightPreference: 'Bright indirect light',
+//     remindersEnabled: true,
+//     notes: 'A gift from a friend. This plant sits beside the living-room window and is the first member of my green collection.',
+// };
 
 const lightOptions = [
     { label: 'Low light', value: 'Low light', icon: 'cloud-outline' },
@@ -23,33 +40,43 @@ const lightOptions = [
     { label: 'Direct sun', value: 'Direct sunlight', icon: 'sunny-outline' },
 ];
 
-const wateredOptions = [
-    { label: 'Today', value: 0 },
-    { label: 'Yesterday', value: 1 },
-    { label: 'Not sure', value: null },
-];
-
-export default function CreatePlantView({
+export default function EditPlantScreen({
+    route,
     navigation,
+    // plant = samplePlant,
+    onCancel,
     onTakePhoto,
     onChoosePhoto,
-    onAddPlant,
-    photoSource = null,
+    onSaveChanges,
 }) {
+    const { plantId } = route.params;
+    const plant = samplePlants.find((plant) => plant.id === plantId);
+
+    const photoSource = plant.image ?? null;
+
     const [values, setValues] = useState({
-        name: '',
-        species: '',
-        location: '',
-        wateringFrequencyDays: 7,
-        lastWateredDaysAgo: null,
-        lightPreference: 'Bright indirect light',
-        remindersEnabled: false,
-        notes: '',
+        name: plant.name ?? '',
+        species: plant.species ?? '',
+        location: plant.location ?? '',
+        wateringFrequencyDays: plant.wateringFrequencyDays ?? 7,
+        lastWateredDaysAgo: plant.lastWateredDaysAgo ?? null,
+        lightPreference: plant.lightPreference ?? 'Bright indirect light',
+        remindersEnabled: plant.remindersEnabled ?? false,
+        notes: plant.notes ?? '',
     });
     const [nameError, setNameError] = useState('');
 
+    const wateredOptions = [
+        ...(Number.isInteger(plant.lastWateredDaysAgo) && plant.lastWateredDaysAgo > 1
+            ? [{ label: `${plant.lastWateredDaysAgo} days ago`, value: plant.lastWateredDaysAgo }]
+            : []),
+        { label: 'Today', value: 0 },
+        { label: 'Yesterday', value: 1 },
+        { label: 'Not sure', value: null },
+    ];
+
     const changeHandler = (field, value) => {
-        setValues((previous) => ({ ...previous, [field]: value }));
+        setValues((previous) => ({ ...previous, [field]: value }))
 
         if (field === 'name') {
             setNameError('');
@@ -63,17 +90,17 @@ export default function CreatePlantView({
         }));
     };
 
-    const addPlantHandler = () => {
+    const saveChangesHandler = () => {
         const name = values.name.trim();
 
         if (!name) {
-            setNameError('Please give your plant a name.');
+            setNameError('Please give your plant a name');
             return;
         }
 
         Keyboard.dismiss();
 
-        onAddPlant?.({
+        onSaveChanges?.(plant.id, {
             ...values,
             name,
             species: values.species.trim(),
@@ -83,18 +110,22 @@ export default function CreatePlantView({
         });
     };
 
+    const onBack = () => {
+        return navigation.goBack()
+    }
+
     return (
         <SafeAreaView style={styles.screen}>
             <View style={styles.toolbar}>
                 <Pressable
                     style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
-                    onPress={() => navigation.navigate('Plants')}
+                    onPress={onBack}
                     accessibilityRole="button"
                     accessibilityLabel="Go back"
                 >
                     <Ionicons name="arrow-back" size={24} color={colors.mainText} />
                 </Pressable>
-                <Text style={styles.toolbarTitle} accessibilityRole="header">Add plant</Text>
+                <Text style={styles.toolbarTitle} accessibilityRole="header">Edit plant</Text>
                 <View style={styles.toolbarDecoration} accessible={false}>
                     <Ionicons name="leaf-outline" size={23} color={colors.primaryGreen} />
                 </View>
@@ -113,8 +144,8 @@ export default function CreatePlantView({
                     keyboardDismissMode="on-drag"
                 >
                     <View style={styles.introduction}>
-                        <Text style={styles.title} accessibilityRole="header">Make room for green</Text>
-                        <Text style={styles.subtitle}>Add your plant and make its care a little easier.</Text>
+                        <Text style={styles.title} accessibilityRole="header">Keep your plant up to date</Text>
+                        <Text style={styles.subtitle}>Update its details and care routine.</Text>
                     </View>
 
                     <View style={styles.section}>
@@ -124,17 +155,17 @@ export default function CreatePlantView({
                                 <Image
                                     source={photoSource}
                                     style={styles.photo}
-                                    accessibilityLabel="Selected plant photo"
+                                    accessibilityLabel={`Photo of ${values.name.trim() || 'your plant'}`}
                                 />
                             ) : (
                                 <>
                                     <View style={styles.photoIcon} accessible={false}>
                                         <Ionicons name="leaf-outline" size={38} color={colors.primaryGreen} />
-                                        <View style={styles.cameraBadge} accessible={false}>
+                                        <View style={styles.cameraBadge}>
                                             <Ionicons name="camera" size={15} color="#FFFFFF" />
                                         </View>
                                     </View>
-                                    <Text style={styles.photoTitle}>A face for your new plant</Text>
+                                    <Text style={styles.photoTitle}>Give your plant a fresh look</Text>
                                     <Text style={styles.photoHint}>Take a photo or choose one you love.</Text>
                                 </>
                             )}
@@ -198,7 +229,7 @@ export default function CreatePlantView({
                         <Text style={styles.sectionTitle} accessibilityRole="header">Your care plan</Text>
                         <View style={styles.careCard}>
                             <View style={styles.careHeading}>
-                                <View style={styles.waterIcon}>
+                                <View style={styles.waterIcon} accessible={false}>
                                     <Ionicons name="water-outline" size={23} color="#168C96" />
                                 </View>
                                 <View style={styles.careHeadingText}>
@@ -318,12 +349,21 @@ export default function CreatePlantView({
 
                     <Pressable
                         style={({ pressed }) => [styles.submitButton, pressed && styles.pressed]}
-                        onPress={addPlantHandler}
+                        onPress={saveChangesHandler}
                         accessibilityRole="button"
-                        accessibilityLabel="Add plant"
+                        accessibilityLabel="Save plant changes"
                     >
-                        <Ionicons name="add-circle-outline" size={23} color="#FFFFFF" />
-                        <Text style={styles.submitText}>Add plant</Text>
+                        <Ionicons name="checkmark-circle-outline" size={23} color="#FFFFFF" />
+                        <Text style={styles.submitText}>Save changes</Text>
+                    </Pressable>
+
+                    <Pressable
+                        style={({ pressed }) => [styles.cancelButton, pressed && styles.pressed]}
+                        onPress={onCancel ?? onBack}
+                        accessibilityRole="button"
+                        accessibilityLabel="Cancel editing plant"
+                    >
+                        <Text style={styles.cancelText}>Cancel</Text>
                     </Pressable>
 
                     <View style={styles.footer} accessible={false}>
@@ -333,62 +373,6 @@ export default function CreatePlantView({
                 </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaView>
-    );
-}
-
-function PlantField({
-    label,
-    icon,
-    required = false,
-    error,
-    multiline = false,
-    ...inputProps
-}) {
-    return (
-        <View style={styles.field}>
-            <Text style={styles.fieldLabel}>
-                {label}{required && <Text style={styles.required}> *</Text>}
-            </Text>
-            <View
-                style={[
-                    styles.inputContainer,
-                    multiline && styles.notesContainer,
-                    error && styles.inputError
-                ]}
-            >
-                <Ionicons name={icon} size={20} color={colors.secondaryText} />
-                <TextInput
-                    {...inputProps}
-                    style={[styles.input, multiline && styles.notesInput]}
-                    placeholderTextColor={colors.secondaryText}
-                    multiline={multiline}
-                    textAlignVertical={multiline ? 'top' : 'center'}
-                    accessibilityLabel={`${label}${required ? ', required' : ''}`}
-                    accessibilityHint={error || undefined}
-                />
-            </View>
-            {error ? <Text style={styles.errorText} accessibilityLiveRegion="polite">{error}</Text> : null}
-        </View>
-    );
-}
-
-function Choice({
-    label,
-    icon,
-    selected,
-    onPress,
-}) {
-    return (
-        <Pressable
-            style={({ pressed }) => [styles.choice, selected && styles.choiceSelected, pressed && styles.pressed]}
-            onPress={onPress}
-            accessibilityRole="radio"
-            accessibilityLabel={label}
-            accessibilityState={{ checked: selected }}
-        >
-            {icon && <Ionicons name={icon} size={17} color={selected ? colors.primaryGreen : colors.secondaryText} />}
-            <Text style={[styles.choiceText, selected && styles.choiceTextSelected]}>{label}</Text>
-        </Pressable>
     );
 }
 
@@ -433,11 +417,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     keyboardContainer: {
-        flex: 1,
+        flex: 1
     },
     scroll: {
         flex: 1
-
     },
     content: {
         width: '100%',
@@ -492,11 +475,7 @@ const styles = StyleSheet.create({
         borderStyle: 'solid',
         aspectRatio: 1.7,
     },
-    photo: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover'
-    },
+    photo: { width: '100%', height: '100%', resizeMode: 'cover' },
     photoIcon: {
         width: 70,
         height: 70,
@@ -574,37 +553,6 @@ const styles = StyleSheet.create({
         lineHeight: 19,
         fontWeight: '600',
         color: colors.mainText,
-    },
-    required: {
-        color: colors.primaryGreen
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        minHeight: 52,
-        paddingHorizontal: 13,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.screenBackground,
-    },
-    input: {
-        flex: 1,
-        minWidth: 0,
-        paddingVertical: 14,
-        paddingHorizontal: 0,
-        fontSize: 14,
-        lineHeight: 21,
-        color: colors.mainText,
-    },
-    inputError: {
-        borderColor: '#B14D3E'
-    },
-    errorText: {
-        fontSize: 12,
-        lineHeight: 18,
-        color: '#A63D32'
     },
     careCard: {
         padding: 16,
@@ -689,34 +637,6 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 8
     },
-    choice: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        maxWidth: '100%',
-        minHeight: 44,
-        paddingHorizontal: 13,
-        paddingVertical: 10,
-        gap: 6,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.screenBackground,
-    },
-    choiceSelected: {
-        borderColor: colors.primaryGreen,
-        backgroundColor: '#E7EFDD'
-    },
-    choiceText: {
-        flexShrink: 1,
-        fontSize: 12,
-        lineHeight: 18,
-        color: colors.secondaryText
-    },
-    choiceTextSelected: {
-        fontWeight: '600',
-        color: colors.primaryGreen
-    },
     reminderCard: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -743,16 +663,6 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: colors.mainText
     },
-    notesContainer: {
-        alignItems: 'flex-start',
-        paddingTop: 14,
-        backgroundColor: colors.cardBackground
-    },
-    notesInput: {
-        minHeight: 110,
-        paddingTop: 0,
-        paddingBottom: 14
-    },
     submitButton: {
         minHeight: 55,
         flexDirection: 'row',
@@ -768,12 +678,32 @@ const styles = StyleSheet.create({
         flexShrink: 1,
         fontSize: 16,
         lineHeight: 22,
-        fontWeight: '700', color: '#FFFFFF'
+        fontWeight: '700',
+        color: '#FFFFFF'
+    },
+    cancelButton: {
+        minHeight: 48,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 17,
+        borderWidth: 1,
+        borderColor: colors.border,
+        backgroundColor: colors.cardBackground,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: -12,
+    },
+    cancelText: {
+        fontSize: 14,
+        lineHeight: 21,
+        fontWeight: '600',
+        color: colors.secondaryText
     },
     footer: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center', gap: 6
+        justifyContent: 'center',
+        gap: 6
     },
     footerText: {
         flexShrink: 1,

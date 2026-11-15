@@ -1,24 +1,27 @@
+import Ionicons from '@react-native-vector-icons/ionicons';
 import {
     Image,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
-    View
-} from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import Ionicons from "@react-native-vector-icons/ionicons";
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors } from "../../theme";
+import StatCard from '../components/profile/StatCard';
+import InfoRow from '../components/profile/InfoRow';
+import MenuRow from '../components/profile/MenuRow';
 
-export default function ProfileView({
+import { colors } from '../theme';
+
+export default function ProfileScreen({
     profile = sampleProfile,
     stats = sampleStats,
     onNavigate,
     onEditProfile,
     onLogout,
 }) {
-    const insets = useSafeAreaInsets();
     const username = profile.username?.trim();
     const displayName = profile.displayName?.trim() || username || 'Plant lover';
     const initials = displayName
@@ -192,77 +195,6 @@ const sampleStats = {
     reminderCount: 5,
     dueTodayCount: 2,
 };
-
-const tabs = [
-    { label: 'Home', route: 'Home', icon: 'home-outline' },
-    { label: 'Plants', route: 'Plants', icon: 'leaf-outline' },
-    { label: 'Add', route: 'AddPlant', icon: 'add', isAdd: true },
-    { label: 'Reminders', route: 'Reminders', icon: 'notifications-outline' },
-    { label: 'Profile', route: 'Profile', icon: 'person' },
-];
-
-function StatCard({
-    icon,
-    value,
-    label,
-    iconColor,
-    iconBackground
-}) {
-    return (
-        <View style={styles.statCard} accessible accessibilityLabel={value + ' ' + label.toLowerCase()}>
-            <View style={[styles.statIcon, { backgroundColor: iconBackground }]} accessible={false}>
-                <Ionicons name={icon} size={20} color={iconColor} />
-            </View>
-            <Text style={styles.statValue}>{value}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
-        </View>
-    );
-}
-
-function InfoRow({
-    icon,
-    label,
-    value,
-    last = false,
-}) {
-    return (
-        <View style={[styles.infoRow, !last && styles.rowDivider]}>
-            <View style={styles.rowIcon} accessible={false}>
-                <Ionicons name={icon} size={20} color={colors.primaryGreen} />
-            </View>
-            <View style={styles.infoText}>
-                <Text style={styles.infoLabel}>{label}</Text>
-                <Text style={styles.infoValue} selectable>{value}</Text>
-            </View>
-        </View>
-    );
-}
-
-function MenuRow({
-    icon,
-    title,
-    subtitle,
-    onPress,
-    last = false,
-}) {
-    return (
-        <Pressable
-            style={({ pressed }) => [styles.menuRow, !last && styles.rowDivider, pressed && styles.pressed]}
-            onPress={onPress}
-            accessibilityRole="button"
-            accessibilityLabel={title + ', ' + subtitle}
-        >
-            <View style={styles.rowIcon} accessible={false}>
-                <Ionicons name={icon} size={21} color={colors.primaryGreen} />
-            </View>
-            <View style={styles.menuText}>
-                <Text style={styles.menuTitle}>{title}</Text>
-                <Text style={styles.menuSubtitle}>{subtitle}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.secondaryText} />
-        </Pressable>
-    );
-}
 
 const styles = StyleSheet.create({
     screen: {
@@ -445,39 +377,6 @@ const styles = StyleSheet.create({
         alignItems: 'stretch',
         gap: 10
     },
-    statCard: {
-        flex: 1,
-        minWidth: 84,
-        paddingHorizontal: 10,
-        paddingVertical: 16,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.cardBackground,
-        alignItems: 'center',
-        gap: 7,
-    },
-    statIcon: {
-        width: 37,
-        height: 37,
-        borderRadius: 13,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 2
-    },
-    statValue: {
-        fontSize: 25,
-        lineHeight: 32,
-        fontWeight: '800',
-        color: colors.mainText,
-        textAlign: 'center'
-    },
-    statLabel: {
-        fontSize: 11,
-        lineHeight: 17,
-        color: colors.secondaryText,
-        textAlign: 'center'
-    },
     infoCard: {
         paddingHorizontal: 15,
         borderRadius: 21,
@@ -485,70 +384,12 @@ const styles = StyleSheet.create({
         borderColor: colors.border,
         backgroundColor: colors.cardBackground,
     },
-    infoRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        paddingVertical: 16
-    },
-    rowIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 14,
-        backgroundColor: '#EAF0E2',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    infoText: {
-        flex: 1,
-        minWidth: 0,
-        gap: 4
-    },
-    infoLabel: {
-        fontSize: 11,
-        lineHeight: 17,
-        color: colors.secondaryText
-    },
-    infoValue: {
-        fontSize: 14,
-        lineHeight: 21,
-        fontWeight: '500',
-        color: colors.mainText
-    },
-    rowDivider: {
-        borderBottomWidth: 1,
-        borderBottomColor:
-            colors.border
-    },
     menuCard: {
         paddingHorizontal: 15,
         borderRadius: 21,
         borderWidth: 1,
         borderColor: colors.border,
         backgroundColor: colors.cardBackground,
-    },
-    menuRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-        minHeight: 78,
-        paddingVertical: 15
-    },
-    menuText: {
-        flex: 1,
-        minWidth: 0,
-        gap: 4
-    },
-    menuTitle: {
-        fontSize: 14,
-        lineHeight: 20,
-        fontWeight: '600',
-        color: colors.mainText
-    },
-    menuSubtitle: {
-        fontSize: 12,
-        lineHeight: 18,
-        color: colors.secondaryText
     },
     logoutButton: {
         minHeight: 52,

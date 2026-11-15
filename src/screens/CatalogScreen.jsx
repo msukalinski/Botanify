@@ -1,7 +1,7 @@
-import Ionicons from "@react-native-vector-icons/ionicons";
+import { useState } from 'react';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import {
     FlatList,
-    Image,
     Keyboard,
     Pressable,
     StyleSheet,
@@ -9,102 +9,20 @@ import {
     TextInput,
     useWindowDimensions,
     View,
-} from "react-native";
-import { useState } from "react";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import samplePlants from "../data/plants";
+import samplePlants from '../data/plants';
+import FilterChip from '../components/catalog/FilterChip';
+import CatalogPlantCard from '../components/catalog/CatalogPlantCard';
 
-import { colors } from "../theme";
-import FilterChip from "../components/catalog/FilterChip";
-
-// const samplePlants = [
-//     {
-//         id: 'monstera',
-//         name: 'Monstera',
-//         location: 'Living room',
-//         image: require('../../../assets/plants/monstera.jpg'),
-//         status: 'water',
-//         wateringInfo: 'Last watered 5 days ago',
-//     },
-//     {
-//         id: 'snake-plant',
-//         name: 'Snake Plant',
-//         location: 'Bedroom',
-//         image: require('../../../assets/plants/snake-plant.jpg'),
-//         status: 'healthy',
-//         wateringInfo: 'Water in 5 days',
-//     },
-//     {
-//         id: 'pothos',
-//         name: 'Pothos',
-//         location: 'Bookshelf',
-//         image: require('../../../assets/plants/pothos.jpg'),
-//         status: 'light',
-//         wateringInfo: 'Last watered 2 days ago',
-//     },
-//     {
-//         id: 'bedroom-monstera',
-//         name: 'Monstera',
-//         location: 'Bedroom',
-//         image: require('../../../assets/plants/monstera.jpg'),
-//         status: 'healthy',
-//         wateringInfo: 'Water in 3 days',
-//     },
-//     {
-//         id: 'office-snake-plant',
-//         name: 'Snake Plant',
-//         location: 'Office',
-//         image: require('../../../assets/plants/snake-plant.jpg'),
-//         status: 'water',
-//         wateringInfo: 'Water today',
-//     },
-//     {
-//         id: 'kitchen-pothos',
-//         name: 'Pothos',
-//         location: 'Kitchen',
-//         image: require('../../../assets/plants/pothos.jpg'),
-//         status: 'healthy',
-//         wateringInfo: 'Water in 4 days',
-//     },
-// ];
-
-const statusStyles = {
-    water: {
-        label: 'Needs water',
-        icon: 'water',
-        color: colors.waterText,
-        backgroundColor: colors.waterBackground,
-    },
-    healthy: {
-        label: 'Doing great',
-        icon: 'leaf',
-        color: colors.healthyText,
-        backgroundColor: colors.healthyBackground,
-    },
-    light: {
-        label: 'Indirect light',
-        icon: 'sunny',
-        color: colors.lightText,
-        backgroundColor: colors.lightBackground,
-    },
-};
-
-const tabs = [
-    { label: 'Home', route: 'Home', icon: 'home-outline' },
-    { label: 'Plants', route: 'Plants', icon: 'leaf' },
-    { label: 'Add', route: 'AddPlant', icon: 'add', isAdd: true },
-    { label: 'Reminders', route: 'Reminders', icon: 'notifications-outline' },
-    { label: 'Profile', route: 'Profile', icon: 'person-outline' },
-];
+import { colors } from '../theme';
 
 export default function CatalogScreen({
     navigation,
     plants = samplePlants,
     onPlantMenu,
 }) {
-
-
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const insets = useSafeAreaInsets();
@@ -251,58 +169,6 @@ export default function CatalogScreen({
     );
 }
 
-function CatalogPlantCard({
-    plant,
-    width,
-    onPress,
-    onMenuPress
-}) {
-    const status = statusStyles[plant.status];
-
-    return (
-        <View style={[styles.plantCard, { width }]}>
-            <View style={styles.imageContainer}>
-                <Pressable
-                    style={({ pressed }) => [styles.imageButton, pressed && styles.pressed]}
-                    onPress={onPress}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open ${plant.name} in ${plant.location}`}
-                >
-                    <Image source={plant.image} style={styles.plantImage} accessible={false} />
-                </Pressable>
-                <Pressable
-                    style={({ pressed }) => [styles.menuButton, pressed && styles.pressed]}
-                    onPress={onMenuPress}
-                    accessibilityRole="button"
-                    accessibilityLabel={`More options for ${plant.name} in ${plant.location}`}
-                >
-                    <View style={styles.menuBackground}>
-                        <Ionicons name="ellipsis-horizontal" size={18} color={colors.mainText} />
-                    </View>
-                </Pressable>
-            </View>
-
-            <Pressable
-                style={({ pressed }) => [styles.plantInfo, pressed && styles.pressed]}
-                onPress={onPress}
-                accessibilityRole="button"
-                accessibilityLabel={`${plant.name}, ${plant.location}, ${status.label}, ${plant.wateringInfo}`}
-            >
-                <Text style={styles.plantName} numberOfLines={1}>{plant.name}</Text>
-                <View style={styles.locationRow}>
-                    <Ionicons name="locate-outline" size={12} color={colors.secondaryText} />
-                    <Text style={styles.locationText} numberOfLines={1}>{plant.location}</Text>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: status.backgroundColor }]}>
-                    <Ionicons name={status.icon} size={13} color={status.color} />
-                    <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
-                </View>
-                <Text style={styles.wateringInfo} numberOfLines={2}>{plant.wateringInfo}</Text>
-            </Pressable >
-        </View >
-    );
-}
-
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
@@ -420,90 +286,6 @@ const styles = StyleSheet.create({
         gap: 12,
         marginBottom: 14,
         alignItems: 'stretch',
-    },
-    plantCard: {
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: colors.cardBackground,
-        overflow: 'hidden',
-    },
-    imageContainer: {
-        position: 'relative',
-        width: '100%',
-        aspectRatio: 1.1,
-        borderBottomLeftRadius: 17,
-        borderBottomRightRadius: 17,
-        backgroundColor: '#EDF1E6',
-        overflow: 'hidden',
-    },
-    imageButton: {
-        flex: 1,
-    },
-    plantImage: {
-        width: '100%',
-        height: '100%',
-        resizeMode: 'cover',
-    },
-    menuButton: {
-        position: 'absolute',
-        top: 2,
-        right: 2,
-        width: 44,
-        height: 44,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    menuBackground: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: '#FFFFFFDD',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    plantInfo: {
-        padding: 12,
-        gap: 8,
-    },
-    plantName: {
-        fontSize: 16,
-        lineHeight: 22,
-        fontWeight: '700',
-        color: colors.mainText,
-    },
-    locationRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    locationText: {
-        flex: 1,
-        fontSize: 11,
-        lineHeight: 16,
-        color: colors.secondaryText,
-    },
-    statusBadge: {
-        alignSelf: 'flex-start',
-        maxWidth: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
-        paddingHorizontal: 8,
-        paddingVertical: 5,
-        borderRadius: 20,
-    },
-    statusText: {
-        flexShrink: 1,
-        fontSize: 11,
-        lineHeight: 15,
-        fontWeight: '500',
-    },
-    wateringInfo: {
-        minHeight: 34,
-        fontSize: 12,
-        lineHeight: 17,
-        color: colors.secondaryText,
     },
     emptyListContent: {
         flexGrow: 1,

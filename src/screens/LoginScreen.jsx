@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { useRef, useState } from 'react';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import {
     Keyboard,
     KeyboardAvoidingView,
@@ -8,12 +9,11 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    View
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Ionicons from "@react-native-vector-icons/ionicons";
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors } from "../../theme";
+import { colors } from '../theme';
 
 export default function Login({
     onLogin,

@@ -235,7 +235,6 @@ const styles = StyleSheet.create({
     plantScroller: {
         flexGrow: 0,
     },
-
     carePanel: {
         padding: 14,
         borderRadius: 22,
@@ -253,7 +252,6 @@ const styles = StyleSheet.create({
         borderRadius: 17,
         overflow: 'hidden',
     },
-
     careDivider: {
         height: 1,
         backgroundColor: colors.border,
@@ -377,54 +375,6 @@ const styles = StyleSheet.create({
         fontSize: 11,
         lineHeight: 16,
         color: colors.mainText,
-    },
-    bottomBar: {
-        backgroundColor: '#FCFDF9',
-        borderTopWidth: 1,
-        borderTopColor: colors.border,
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        paddingTop: 8,
-        paddingHorizontal: 8,
-    },
-    tabRow: {
-        width: '100%',
-        maxWidth: 560,
-        alignSelf: 'center',
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-    },
-    tab: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        minHeight: 54,
-        gap: 5,
-    },
-    tabIcon: {
-        height: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    addButton: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        marginTop: -25,
-        backgroundColor: '#7B9D66',
-        borderWidth: 3,
-        borderColor: '#FCFDF9',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    tabLabel: {
-        fontSize: 10,
-        lineHeight: 14,
-        color: colors.secondaryText,
-    },
-    tabLabelActive: {
-        fontWeight: '700',
-        color: colors.primaryGreen,
     },
     pressed: {
         opacity: 0.65,
