@@ -16,16 +16,11 @@ import RegisterField from '../components/register/RegisterField';
 
 import { colors } from '../theme';
 import { registerUser } from '../services/userService';
+import useForm from '../hooks/useForm';
 
 export default function RegisterScreen({
     navigation,
 }) {
-    const [values, setValues] = useState({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-    });
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
@@ -33,16 +28,19 @@ export default function RegisterScreen({
     const passwordInput = useRef(null);
     const confirmPasswordInput = useRef(null);
 
-    const changeHandler = (name, value) => {
-        setValues((previous) => ({ ...previous, [name]: value }));
+    const clearFieldErrors = (name) => {
         setErrors((previous) => ({
             ...previous,
             [name]: undefined,
-            ...(name === 'password' ? { confirmPassword: undefined } : {}),
+            registerError: undefined,
+            ...(name === 'password'
+                ? { confirmPassword: undefined }
+                : {}
+            ),
         }));
     }
 
-    const registerHandler = async () => {
+    const registerHandler = async (values) => {
         if (submitting) {
             return;
         }
@@ -109,6 +107,17 @@ export default function RegisterScreen({
         }
     }
 
+    const { register, formAction } = useForm(
+        registerHandler,
+        {
+            username: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+        },
+        clearFieldErrors
+    );
+
     const onLogin = () => {
         return navigation.goBack();
     }
@@ -144,8 +153,7 @@ export default function RegisterScreen({
                                 label="Username"
                                 icon="person-outline"
                                 placeholder="Your username"
-                                value={values.username}
-                                onChangeText={(value) => changeHandler('username', value)}
+                                {...register('username')}
                                 error={errors.username}
                                 autoComplete="username"
                                 onSubmitEditing={() => emailInput?.current.focus()}
@@ -156,8 +164,7 @@ export default function RegisterScreen({
                                 icon="mail-outline"
                                 placeholder="you@example.com"
                                 inputRef={emailInput}
-                                value={values.email}
-                                onChangeText={(value) => changeHandler('email', value)}
+                                {...register('email')}
                                 error={errors.email}
                                 KeyboardType="email-address"
                                 autoComplete="email"
@@ -169,8 +176,7 @@ export default function RegisterScreen({
                                 icon="lock-closed-outline"
                                 placeholder="At least 6 characters"
                                 inputRef={passwordInput}
-                                value={values.password}
-                                onChangeText={(value) => changeHandler('password', value)}
+                                {...register('password')}
                                 error={errors.password}
                                 autoComplete="new-password"
                                 isPassword
@@ -182,18 +188,17 @@ export default function RegisterScreen({
                                 icon="lock-closed-outline"
                                 placeholder="Repeat your password"
                                 inputRef={confirmPasswordInput}
-                                value={values.confirmPassword}
-                                onChangeText={(value) => changeHandler('confirmPassword', value)}
+                                {...register('confirmPassword')}
                                 error={errors.confirmPassword}
                                 autoComplete="new-password"
                                 isPassword
                                 returnKeyType="done"
-                                onSubmitEditing={registerHandler}
+                                onSubmitEditing={formAction}
                             />
 
                             <Pressable
                                 style={({ pressed }) => [styles.submitButton, pressed && styles.pressed]}
-                                onPress={registerHandler}
+                                onPress={formAction}
                                 disabled={submitting}
                                 accessibilityRole="button"
                                 accessibilityState={{
