@@ -111,7 +111,7 @@ export default function EditPlantScreen({
     };
 
     const onBack = () => {
-        return navigation.goBack()
+        return navigation.goBack();
     }
 
     return (
