@@ -15,10 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import RegisterField from '../components/register/RegisterField';
 
 import { colors } from '../theme';
+import { registerUser } from '../services/userService';
 
-export default function Register({
-    onRegister,
-    onLogin
+export default function RegisterScreen({
+    navigation,
 }) {
     const [values, setValues] = useState({
         username: '',
@@ -27,6 +27,7 @@ export default function Register({
         confirmPassword: '',
     });
     const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
 
     const emailInput = useRef(null);
     const passwordInput = useRef(null);
@@ -41,7 +42,11 @@ export default function Register({
         }));
     }
 
-    const registerHandler = () => {
+    const registerHandler = async () => {
+        if (submitting) {
+            return;
+        }
+
         const nextErrors = {};
         const username = values.username.trim();
         const email = values.email.trim();
@@ -70,12 +75,42 @@ export default function Register({
 
         setErrors(nextErrors);
 
-        if (Object.keys(errors).length > 0) {
+        if (Object.keys(nextErrors).length > 0) {
             return;
         }
 
         Keyboard.dismiss();
-        onRegister?.({ username, email, password: values.password });
+
+        setSubmitting(true);
+
+        try {
+            const data = await registerUser({
+                username,
+                email,
+                password: values.password,
+            });
+
+            if (!data.session) {
+                setErrors((previous) => ({
+                    ...previous,
+                    registerError: 'Your account was created, but automatic log in failed. Please log in.',
+                }));
+                return;
+            }
+        } catch (err) {
+            setErrors((previous) => ({
+                ...previous,
+                registerError: err instanceof Error
+                    ? err.message
+                    : 'Registration failed. Please try again.',
+            }));
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
+    const onLogin = () => {
+        return navigation.goBack();
     }
 
     return (
@@ -159,19 +194,33 @@ export default function Register({
                             <Pressable
                                 style={({ pressed }) => [styles.submitButton, pressed && styles.pressed]}
                                 onPress={registerHandler}
+                                disabled={submitting}
                                 accessibilityRole="button"
-                                accessibilityLabel="Create account"
+                                accessibilityState={{
+                                    disabled: submitting,
+                                    busy: submitting,
+                                }}
                             >
-                                <Text style={styles.submitText}>Create account</Text>
+                                <Text style={styles.submitText}>
+                                    {submitting ? 'Creating account...' : 'Create account'}
+                                </Text>
                                 <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
                             </Pressable>
+
+                            {errors.registerError && (
+                                <Text style={styles.error} accessibilityRole='alert'>
+                                    {errors.registerError}
+                                </Text>
+                            )}
                         </View>
+
+
 
                         <View style={styles.loginRow}>
                             <Text style={styles.loginText}>Already have an account?</Text>
                             <Pressable
                                 style={({ pressed }) => [styles.loginButton, pressed && styles.pressed]}
-                                onPress={onLogin}
+                                onPress={() => onLogin()}
                                 accessibilityRole="button"
                                 accessibilityLabel="Sign in"
                             >
@@ -284,6 +333,11 @@ const styles = StyleSheet.create({
         lineHeight: 22,
         fontWeight: '700',
         color: '#FFFFFF',
+    },
+    error: {
+        fontSize: 12,
+        lineHeight: 18,
+        color: '#A63D32',
     },
     loginRow: {
         flexDirection: 'row',
