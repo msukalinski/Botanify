@@ -14,10 +14,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '../theme';
+import { login } from '../services/userService';
 
-export default function Login({
+export default function LoginScreen({
+    navigation,
     onLogin,
-    onRegister,
 }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -26,7 +27,7 @@ export default function Login({
     const [errors, setErrors] = useState({});
     const passwordInput = useRef(null);
 
-    const loginHandler = () => {
+    const loginHandler = async () => {
         const nextErrors = {};
         const trimmedEmail = email.trim();
 
@@ -47,7 +48,11 @@ export default function Login({
         }
 
         Keyboard.dismiss();
-        onLogin?.({ email: trimmedEmail, password });
+        await login({ email: trimmedEmail, password });
+    }
+
+    const onRegisterPress = () => {
+        return navigation.navigate('Register');
     }
 
     return (
@@ -178,7 +183,7 @@ export default function Login({
                             <Text style={styles.registerText}>New to Botanify</Text>
                             <Pressable
                                 style={({ pressed }) => [styles.registerButton, pressed && styles.pressed]}
-                                onPress={onRegister}
+                                onPress={() => onRegisterPress()}
                                 accessibilityRole="button"
                                 accessibilityLabel="Create an account"
                             >
