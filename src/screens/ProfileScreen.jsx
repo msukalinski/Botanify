@@ -14,14 +14,13 @@ import InfoRow from '../components/profile/InfoRow';
 import MenuRow from '../components/profile/MenuRow';
 
 import { colors } from '../theme';
+import { logout } from '../services/userService';
 
 export default function ProfileScreen({
     navigation,
     profile = sampleProfile,
     stats = sampleStats,
-    onNavigate,
     onEditProfile,
-    onLogout,
 }) {
     const username = profile.username?.trim();
     const displayName = profile.displayName?.trim() || username || 'Plant lover';
@@ -35,6 +34,10 @@ export default function ProfileScreen({
     const plantCount = stats.plantCount ?? 0;
     const reminderCount = stats.reminderCount ?? 0;
     const dueTodayCount = stats.dueTodayCount ?? 0;
+
+    const onLogout = async () => {
+        await logout();
+    }
 
     return (
         <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
