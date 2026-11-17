@@ -15,25 +15,38 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors } from '../theme';
 import { login } from '../services/userService';
+import useForm from '../hooks/useForm';
 
 export default function LoginScreen({
     navigation,
-    onLogin,
 }) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+
     const [showPassword, setShowPassword] = useState(false);
     const [focusedField, setFocusedField] = useState(null);
-    const [errors, setErrors] = useState({});
     const passwordInput = useRef(null);
 
-    const loginHandler = async () => {
-        const nextErrors = {};
-        const trimmedEmail = email.trim();
+    const clearFieldErrors = (name) => {
+        setErrors((previous) => ({
+            ...previous,
+            [name]: undefined,
+            loginError: undefined,
+        }));
+    }
 
-        if (!trimmedEmail) {
+    const loginHandler = async (values) => {
+        if (submitting) {
+            return;
+        }
+
+        const nextErrors = {};
+        const email = values.email.trim();
+        const password = values.password;
+
+        if (!email) {
             nextErrors.email = 'Please enter your email.';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             nextErrors.email = 'Please enter a valid email address.';
         }
 
@@ -44,14 +57,37 @@ export default function LoginScreen({
         setErrors(nextErrors);
 
         if (Object.keys(nextErrors).length > 0) {
-            return
+            return;
         }
 
         Keyboard.dismiss();
-        await login({ email: trimmedEmail, password });
+
+        setSubmitting(true);
+
+        try {
+            await login({ email, password });
+        } catch (err) {
+            setErrors((previous) => ({
+                ...previous,
+                loginError: err instanceof Error
+                    ? err.message
+                    : 'Login failed. Please try again.'
+            }));
+        } finally {
+            setSubmitting(false);
+        }
     }
 
-    const onRegisterPress = () => {
+    const { register, formAction } = useForm(
+        loginHandler,
+        {
+            email: '',
+            password: '',
+        },
+        clearFieldErrors,
+    )
+
+    const onRegister = () => {
         return navigation.navigate('Register');
     }
 
@@ -94,11 +130,7 @@ export default function LoginScreen({
                                     <Ionicons name="mail-outline" size={20} color={colors.secondaryText} />
                                     <TextInput
                                         style={styles.input}
-                                        value={email}
-                                        onChangeText={(value) => {
-                                            setEmail(value)
-                                            setErrors((previous) => ({ ...previous, email: undefined }));
-                                        }}
+                                        {...register('email')}
                                         onFocus={() => setFocusedField('email')}
                                         onBlur={() => setFocusedField(null)}
                                         placeholder="you@example.com"
@@ -132,11 +164,7 @@ export default function LoginScreen({
                                     <TextInput
                                         ref={passwordInput}
                                         style={styles.input}
-                                        value={password}
-                                        onChangeText={(value) => {
-                                            setPassword(value)
-                                            setErrors((previous) => ({ ...previous, password: undefined }));
-                                        }}
+                                        {...register('password')}
                                         onFocus={() => setFocusedField('password')}
                                         onBlur={() => setFocusedField(null)}
                                         placeholder="Enter your password"
@@ -146,7 +174,7 @@ export default function LoginScreen({
                                         autoCorrect={false}
                                         autoComplete="current-password"
                                         returnKeyType="done"
-                                        onSubmitEditing={loginHandler}
+                                        onSubmitEditing={formAction}
                                         accessibilityLabel="Password"
                                         accessibilityHint={errors.password}
                                     />
@@ -170,20 +198,32 @@ export default function LoginScreen({
 
                             <Pressable
                                 style={({ pressed }) => [styles.submitButton, pressed && styles.pressed]}
-                                onPress={loginHandler}
+                                onPress={formAction}
+                                disabled={submitting}
                                 accessibilityRole="button"
-                                accessibilityLabel="Sign in"
+                                accessibilityState={{
+                                    disabled: submitting,
+                                    busy: submitting,
+                                }}
                             >
-                                <Text style={styles.submitText}>Sign in</Text>
+                                <Text style={styles.submitText}>
+                                    {submitting ? 'Signing in...' : 'Sign in'}
+                                </Text>
                                 <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
                             </Pressable>
+
+                            {errors.loginError && (
+                                <Text style={styles.error} accessibilityRole='alert'>
+                                    {errors.loginError}
+                                </Text>
+                            )}
                         </View>
 
                         <View style={styles.registerRow}>
                             <Text style={styles.registerText}>New to Botanify</Text>
                             <Pressable
                                 style={({ pressed }) => [styles.registerButton, pressed && styles.pressed]}
-                                onPress={() => onRegisterPress()}
+                                onPress={() => onRegister()}
                                 accessibilityRole="button"
                                 accessibilityLabel="Create an account"
                             >
