@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import {
+    ActivityIndicator,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -201,15 +202,20 @@ export default function RegisterScreen({
                                 onPress={formAction}
                                 disabled={submitting}
                                 accessibilityRole="button"
+                                accessibilityLabel={submitting ? 'Creating account...' : 'Create account'}
                                 accessibilityState={{
                                     disabled: submitting,
                                     busy: submitting,
                                 }}
                             >
+                                {submitting ? (
+                                    <ActivityIndicator size='small' color="#FFFFFF" />
+                                ) : (
+                                    <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                                )}
                                 <Text style={styles.submitText}>
                                     {submitting ? 'Creating account...' : 'Create account'}
                                 </Text>
-                                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
                             </Pressable>
 
                             {errors.registerError && (

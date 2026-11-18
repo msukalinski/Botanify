@@ -1,5 +1,6 @@
 import Ionicons from '@react-native-vector-icons/ionicons';
 import {
+    ActivityIndicator,
     Image,
     Pressable,
     ScrollView,
@@ -204,16 +205,27 @@ export default function ProfileScreen({
                     onPress={() => logoutHandler()}
                     disabled={loggingOut}
                     accessibilityRole="button"
+                    accessibilityLabel={loggingOut ? 'Logging out' : 'Log out'}
                     accessibilityState={{
                         disabled: loggingOut,
                         busy: loggingOut,
                     }}
                 >
-                    <Ionicons name="log-out-outline" size={21} color="#A63D32" />
+                    {loggingOut ? (
+                        <ActivityIndicator size='small' color='#FFFFFF' />
+                    ) : (
+                        <Ionicons name="log-out-outline" size={21} color="#A63D32" />
+                    )}
                     <Text style={styles.logoutText}>
                         {loggingOut ? 'Logging out' : 'Log out'}
                     </Text>
                 </Pressable>
+
+                {error && (
+                    <Text style={styles.error} accessibilityRole='alert'>
+                        {error}
+                    </Text>
+                )}
 
                 <View style={styles.footer} accessible={false}>
                     <Ionicons name="leaf-outline" size={15} color={colors.secondaryText} />
@@ -440,6 +452,11 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#A63D32',
         textAlign: 'center'
+    },
+    error: {
+        fontSize: 12,
+        lineHeight: 18,
+        color: '#A63D32',
     },
     footer: {
         flexDirection: 'row',

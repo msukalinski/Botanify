@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import {
+    ActivityIndicator,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -201,15 +202,20 @@ export default function LoginScreen({
                                 onPress={formAction}
                                 disabled={submitting}
                                 accessibilityRole="button"
+                                accessibilityLabel={submitting ? 'Signing in...' : 'Sign in'}
                                 accessibilityState={{
                                     disabled: submitting,
                                     busy: submitting,
                                 }}
                             >
+                                {submitting ? (
+                                    <ActivityIndicator size='small' color="#FFFFFF" />
+                                ) : (
+                                    <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
+                                )}
                                 <Text style={styles.submitText}>
                                     {submitting ? 'Signing in...' : 'Sign in'}
                                 </Text>
-                                <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
                             </Pressable>
 
                             {errors.loginError && (
