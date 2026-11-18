@@ -8,13 +8,29 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
 
 import StatCard from '../components/profile/StatCard';
 import InfoRow from '../components/profile/InfoRow';
 import MenuRow from '../components/profile/MenuRow';
 
-import { colors } from '../theme';
 import { logout } from '../services/userService';
+
+import { colors } from '../theme';
+
+const sampleProfile = {
+    displayName: 'Alex Green',
+    username: 'alexgrows',
+    email: 'alex@example.com',
+    memberSinceLabel: 'November 2026',
+    avatar: null,
+};
+
+const sampleStats = {
+    plantCount: 6,
+    reminderCount: 5,
+    dueTodayCount: 2,
+};
 
 export default function ProfileScreen({
     navigation,
@@ -22,6 +38,9 @@ export default function ProfileScreen({
     stats = sampleStats,
     onEditProfile,
 }) {
+    const [loggingOut, setLoggingOut] = useState(false);
+    const [error, setError] = useState('');
+
     const username = profile.username?.trim();
     const displayName = profile.displayName?.trim() || username || 'Plant lover';
     const initials = displayName
@@ -35,8 +54,22 @@ export default function ProfileScreen({
     const reminderCount = stats.reminderCount ?? 0;
     const dueTodayCount = stats.dueTodayCount ?? 0;
 
-    const onLogout = async () => {
-        await logout();
+    const logoutHandler = async () => {
+        if (loggingOut) {
+            return;
+        }
+
+        setError('');
+        setLoggingOut(true);
+
+        try {
+            await logout();
+        } catch (err) {
+            setError(err?.message || 'Could not log out. Please try again.');
+        } finally {
+            setLoggingOut(false);
+        }
+
     }
 
     return (
@@ -168,12 +201,18 @@ export default function ProfileScreen({
 
                 <Pressable
                     style={({ pressed }) => [styles.logoutButton, pressed && styles.pressed]}
-                    onPress={() => onLogout?.()}
+                    onPress={() => logoutHandler()}
+                    disabled={loggingOut}
                     accessibilityRole="button"
-                    accessibilityLabel="Log out"
+                    accessibilityState={{
+                        disabled: loggingOut,
+                        busy: loggingOut,
+                    }}
                 >
                     <Ionicons name="log-out-outline" size={21} color="#A63D32" />
-                    <Text style={styles.logoutText}>Log out</Text>
+                    <Text style={styles.logoutText}>
+                        {loggingOut ? 'Logging out' : 'Log out'}
+                    </Text>
                 </Pressable>
 
                 <View style={styles.footer} accessible={false}>
@@ -185,20 +224,6 @@ export default function ProfileScreen({
         </SafeAreaView >
     );
 }
-
-const sampleProfile = {
-    displayName: 'Alex Green',
-    username: 'alexgrows',
-    email: 'alex@example.com',
-    memberSinceLabel: 'November 2026',
-    avatar: null,
-};
-
-const sampleStats = {
-    plantCount: 6,
-    reminderCount: 5,
-    dueTodayCount: 2,
-};
 
 const styles = StyleSheet.create({
     screen: {
