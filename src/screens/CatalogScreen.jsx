@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import {
     FlatList,
@@ -12,26 +13,113 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import samplePlants from '../data/plants';
+import { getPlants } from '../services/plantService';
+import { getLastWatered } from '../utils/getLastWatered';
+import LoadingIndicator from '../components/loading-indicator/LoadingIndicator';
+import ErrorMessage from '../components/error-message/ErrorMessage';
 import FilterChip from '../components/catalog/FilterChip';
 import CatalogPlantCard from '../components/catalog/CatalogPlantCard';
 
 import { colors } from '../theme';
 
+function toCatalogPlant(plant, today) {
+    const lastWateredDate = plant.lastWateredAt;
+    const daysAgo = lastWateredDate
+        ? Math.round((
+            Date.parse(`${today}T00:00:00Z`)
+            - Date.parse(`${lastWateredDate}T00:00:00Z`)
+        ) / 86400000)
+        : null;
+    const hasWateringDate = Number.isFinite(daysAgo) && daysAgo >= 0;
+    const frequency = Number(plant.wateringFrequencyDays);
+
+    let wateringInfo = 'Last watering date unknown';
+
+    if (hasWateringDate) {
+        wateringInfo = daysAgo === 0
+            ? 'Last watered today'
+            : `Last watered ${daysAgo} days ago`;
+    }
+
+    return {
+        ...plant,
+        image: null,
+        location: plant.location?.trim() || 'No location',
+        status: !hasWateringDate || !Number.isFinite(frequency) || frequency < 1
+            ? 'unknown'
+            : daysAgo >= frequency ? 'water' : 'healthy',
+        wateringInfo
+    }
+}
+
 export default function CatalogScreen({
     navigation,
-    plants = samplePlants,
+    route,
     onPlantMenu,
 }) {
+    const [plants, setPlants] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
+    const [reloadKey, setReloadKey] = useState(0);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const insets = useSafeAreaInsets();
     const { width } = useWindowDimensions();
 
+    const createdPlantId = route?.params?.createdPlantId;
+
+    useEffect(() => {
+        if (createdPlantId) {
+            setSearch('');
+            setFilter('all');
+        }
+    }, [createdPlantId]);
+
+    useFocusEffect(useCallback(() => {
+        let active = true;
+
+        const loadPlants = async () => {
+            setLoading(true);
+            setLoadError('');
+
+            try {
+                const data = await getPlants();
+
+                if (active) {
+                    const today = getLastWatered(0);
+                    setPlants(data.map((plant) => toCatalogPlant(plant, today)));
+                }
+            } catch (err) {
+                if (active) {
+                    setPlants([]);
+                    setLoadError(typeof err?.message === 'string' && err.message
+                        ? err.message
+                        : 'Could not load your plants. Please try again.');
+                }
+            } finally {
+                if (active) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        loadPlants();
+
+        return () => {
+            active = false;
+        };
+    }, [reloadKey]));
+
     const containerWidth = Math.min(width - insets.left - insets.right, 560);
     const cardWidth = (containerWidth - 36 - 12) / 2;
     const query = search.trim().toLowerCase();
     const needsWaterCount = plants.filter((plant) => plant.status === 'water').length;
+    const collection = createdPlantId
+        ? [
+            ...plants.filter((plant) => plant.id === createdPlantId),
+            ...plants.filter((plant) => plant.id !== createdPlantId),
+        ]
+        : plants;
     const visiblePlants = plants.filter((plant) => {
         const matchesSearch = plant.name.toLowerCase().includes(query);
         const matchesFilter = filter === 'all' || plant.status === 'water';
@@ -116,13 +204,13 @@ export default function CatalogScreen({
 
             <FlatList
                 style={styles.list}
-                data={visiblePlants}
+                data={loading || loadError ? [] : visiblePlants}
                 numColumns={2}
                 keyExtractor={(plant) => plant.id}
                 columnWrapperStyle={styles.gridRow}
                 contentContainerStyle={[
                     styles.listContent,
-                    visiblePlants.length === 0 && styles.emptyListContent,
+                    (loading || loadError || visiblePlants.length === 0) && styles.emptyListContent,
                 ]}
                 renderItem={({ item }) => (
                     <CatalogPlantCard
@@ -132,8 +220,16 @@ export default function CatalogScreen({
                         onMenuPress={() => onPlantMenu?.(item.id)}
                     />
                 )}
-                ListEmptyComponent={
-                    <View style={styles.emptyState}>
+                ListEmptyComponent={loading ? (
+                    <LoadingIndicator message='Loading your plants...' />
+                ) : loadError ? (
+                    <ErrorMessage
+                        title='Could not load your plants'
+                        message={loadError}
+                        onRetry={() => setReloadKey((previous) => previous + 1)}
+                    />
+                ) : (
+                    < View style={styles.emptyState}>
                         <View style={styles.emptyIcon} accessibilityActions={false}>
                             <Ionicons
                                 name={plants.length === 0 ? 'leaf-outline' : 'search-outline'}
@@ -159,7 +255,7 @@ export default function CatalogScreen({
                             </Text>
                         </Pressable>
                     </View>
-                }
+                )}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="on-drag"

@@ -110,7 +110,7 @@ export default function CreatePlantScreen({
 
             setValues({ ...initialValues });
             setErrors({});
-            navigation.navigate('Plants', { createdPlantId: createPlant.id });
+            navigation.navigate('Plants', { createdPlantId: createdPlant.id });
         } catch (err) {
             setErrors((previous) => ({
                 ...previous,

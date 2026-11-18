@@ -10,6 +10,12 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 import { colors } from '../../theme';
 
 const statusStyles = {
+    unknown: {
+        label: 'Watering date unknown',
+        icon: 'help-circle-outline',
+        color: colors.secondaryText,
+        backgroundColor: colors.lightGreenBackground,
+    },
     water: {
         label: 'Needs water',
         icon: 'water',
@@ -36,7 +42,7 @@ export default function CatalogPlantCard({
     onPress,
     onMenuPress,
 }) {
-    const status = statusStyles[plant.status];
+    const status = statusStyles[plant.status] ?? statusStyles.unknown;
 
     return (
         <View style={[styles.plantCard, { width }]}>
@@ -50,11 +56,17 @@ export default function CatalogPlantCard({
                     accessibilityRole="button"
                     accessibilityLabel={`Open ${plant.name} in ${plant.location}`}
                 >
-                    <Image
-                        source={plant.image}
-                        style={styles.plantImage}
-                        accessible={false}
-                    />
+                    {plant.image ? (
+                        <Image
+                            source={plant.image}
+                            style={styles.plantImage}
+                            accessible={false}
+                        />
+                    ) : (
+                        <View style={styles.imagePlaceholder} accessible={false}>
+                            <Ionicons name="leaf-outline" size={40} color={colors.primaryGreen} />
+                        </View>
+                    )}
                 </Pressable>
 
                 <Pressable
@@ -148,6 +160,12 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+    },
+    imagePlaceholder: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.lightGreenBackground,
     },
     menuButton: {
         position: 'absolute',
