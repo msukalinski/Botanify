@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import {
+    ActivityIndicator,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -14,8 +15,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { createPlant } from '../services/plantService';
+
 import PlantField from '../components/plant-form/PlantField';
 import Choice from '../components/plant-form/Choice';
+import useForm from '../hooks/useForm';
+
+import { getLastWatered } from '../utils/getLastWatered';
 
 import { colors } from '../theme';
 
@@ -31,32 +37,34 @@ const wateredOptions = [
     { label: 'Not sure', value: null },
 ];
 
+const initialValues = {
+    name: '',
+    species: '',
+    location: '',
+    wateringFrequencyDays: 7,
+    lastWateredDaysAgo: null,
+    lightPreference: 'Bright indirect light',
+    remindersEnabled: false,
+    notes: '',
+}
+
 export default function CreatePlantScreen({
     navigation,
     onTakePhoto,
     onChoosePhoto,
-    onAddPlant,
     photoSource = null,
 }) {
-    const [values, setValues] = useState({
-        name: '',
-        species: '',
-        location: '',
-        wateringFrequencyDays: 7,
-        lastWateredDaysAgo: null,
-        lightPreference: 'Bright indirect light',
-        remindersEnabled: false,
-        notes: '',
-    });
-    const [nameError, setNameError] = useState('');
+    const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+    const submittingRef = useRef(false);
 
-    const changeHandler = (field, value) => {
-        setValues((previous) => ({ ...previous, [field]: value }));
-
-        if (field === 'name') {
-            setNameError('');
-        };
-    };
+    const clearFieldErrors = (name) => {
+        setErrors((previous) => ({
+            ...previous,
+            [name]: undefined,
+            createError: undefined,
+        }));
+    }
 
     const changeWateringFrequency = (change) => {
         setValues((previous) => ({
@@ -65,25 +73,62 @@ export default function CreatePlantScreen({
         }));
     };
 
-    const addPlantHandler = () => {
+    const addPlantHandler = async (values) => {
+        if (submittingRef.current) {
+            return;
+        }
+
+        setErrors({});
+
         const name = values.name.trim();
 
         if (!name) {
-            setNameError('Please give your plant a name.');
+            setErrors((previous) => ({
+                ...previous,
+                name: 'Please give your plant a name.',
+            }));
             return;
         }
 
         Keyboard.dismiss();
 
-        onAddPlant?.({
-            ...values,
-            name,
-            species: values.species.trim(),
-            location: values.location.trim(),
-            notes: values.notes.trim(),
-            photoSource,
-        });
+        submittingRef.current = true;
+        setSubmitting(true);
+
+        try {
+            const createdPlant = await createPlant({
+                name,
+                species: values.species.trim(),
+                location: values.location.trim(),
+                wateringFrequencyDays: values.wateringFrequencyDays,
+                lastWateredAt: getLastWatered(values.lastWateredDaysAgo),
+                lightPreference: values.lightPreference,
+                remindersEnabled: values.remindersEnabled,
+                notes: values.notes.trim(),
+                imagePath: null,
+            });
+
+            setValues({ ...initialValues });
+            setErrors({});
+            navigation.navigate('Plants', { createdPlantId: createPlant.id });
+        } catch (err) {
+            setErrors((previous) => ({
+                ...previous,
+                createError: typeof err?.message === 'string' && err.message
+                    ? err.message
+                    : 'Could not save this plant. Please try again.',
+            }));
+        } finally {
+            submittingRef.current = false;
+            setSubmitting(false);
+        }
     };
+
+    const { values, setValues, register, changeHandler, formAction } = useForm(
+        addPlantHandler,
+        initialValues,
+        clearFieldErrors,
+    );
 
     return (
         <SafeAreaView style={styles.screen}>
@@ -171,17 +216,15 @@ export default function CreatePlantScreen({
                                 required
                                 icon="leaf-outline"
                                 placeholder="e.g. Monstera"
-                                value={values.name}
-                                onChangeText={(value) => changeHandler('name', value)}
-                                error={nameError}
+                                {...register('name')}
+                                error={errors.name}
                                 maxLength={80}
                             />
                             <PlantField
                                 label='Species (optional)'
                                 icon="flower-outline"
                                 placeholder="e.g. Monstera deliciosa"
-                                value={values.species}
-                                onChangeText={(value) => changeHandler('species', value)}
+                                {...register('species')}
                                 autoCorrect={false}
                                 maxLength={120}
                             />
@@ -189,8 +232,7 @@ export default function CreatePlantScreen({
                                 label='Location (optional)'
                                 icon="location-outline"
                                 placeholder="e.g. Living room"
-                                value={values.location}
-                                onChangeText={(value) => changeHandler('location', value)}
+                                {...register('location')}
                                 maxLength={100}
                             />
                         </View>
@@ -320,13 +362,27 @@ export default function CreatePlantScreen({
 
                     <Pressable
                         style={({ pressed }) => [styles.submitButton, pressed && styles.pressed]}
-                        onPress={addPlantHandler}
+                        onPress={formAction}
+                        disabled={submitting}
                         accessibilityRole="button"
-                        accessibilityLabel="Add plant"
+                        accessibilityLabel={submitting ? 'Adding plant' : 'Add plant'}
+                        accessibilityState={{ disabled: submitting, busy: submitting }}
                     >
-                        <Ionicons name="add-circle-outline" size={23} color="#FFFFFF" />
-                        <Text style={styles.submitText}>Add plant</Text>
+                        {submitting ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                        ) : (
+                            <Ionicons name="add-circle-outline" size={23} color="#FFFFFF" />
+                        )}
+                        <Text style={styles.submitText} accessibilityLiveRegion="polite">
+                            {submitting ? 'Adding plant…' : 'Add plant'}
+                        </Text>
                     </Pressable>
+
+                    {errors.createError && (
+                        <Text style={styles.error} accessibilityRole='alert'>
+                            {errors.createError}
+                        </Text>
+                    )}
 
                     <View style={styles.footer} accessible={false}>
                         <Ionicons name="leaf-outline" size={15} color={colors.secondaryText} />
@@ -646,6 +702,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 22,
         fontWeight: '700', color: '#FFFFFF'
+    },
+    error: {
+        fontSize: 12,
+        lineHeight: 18,
+        color: '#A63D32',
     },
     footer: {
         flexDirection: 'row',
