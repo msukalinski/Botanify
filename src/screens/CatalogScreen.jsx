@@ -93,7 +93,7 @@ export default function CatalogScreen({
             ...plants.filter((plant) => plant.id !== createdPlantId),
         ]
         : plants;
-    const visiblePlants = plants.filter((plant) => {
+    const visiblePlants = collection.filter((plant) => {
         const matchesSearch = plant.name.toLowerCase().includes(query);
         const matchesFilter = filter === 'all' || plant.status === 'water';
         return matchesSearch && matchesFilter;
