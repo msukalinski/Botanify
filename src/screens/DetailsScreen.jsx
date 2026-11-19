@@ -1,4 +1,4 @@
-import Ionicons from '@react-native-vector-icons/ionicons';
+import { useCallback, useState } from 'react';
 import {
     Image,
     Pressable,
@@ -11,14 +11,28 @@ import {
     SafeAreaView,
     useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { useFocusEffect } from '@react-navigation/native';
+
+import { getPlantById } from '../services/plantService';
+
+import { getLastWatered } from '../utils/getLastWatered';
+import { toCatalogPlant } from '../utils/toCatalogPlant';
 
 import CareTile from '../components/details/CareTile';
-
-import samplePlants from '../data/plants';
+import LoadingIndicator from '../components/loading-indicator/LoadingIndicator';
+import ErrorMessage from '../components/error-message/ErrorMessage';
 
 import { colors } from '../theme';
+import NotFound from '../components/not-found/NotFound';
 
 const plantStatuses = {
+    unknown: {
+        label: 'Watering date unknown',
+        icon: 'help-circle-outline',
+        color: colors.secondaryText,
+        backgroundColor: colors.lightGreenBackground,
+    },
     water: {
         label: 'Needs water',
         icon: 'water',
@@ -49,13 +63,73 @@ export default function DetailsScreen({
     const insets = useSafeAreaInsets();
 
     const { plantId } = route.params;
-    const plant = samplePlants.find((plant) => plant.id === plantId);
 
-    const status = plantStatuses[plant.status];
-    const needsWater = plant.status === 'water';
-    const wateringCycle = plant.wateringFrequencyDays === 1
+    const [plant, setPlant] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [reloadKey, setReloadKey] = useState(0);
+
+    useFocusEffect(useCallback(() => {
+        let active = true;
+
+        const loadPlant = async () => {
+            setLoading(true);
+            setError('');
+
+            try {
+                const data = await (getPlantById(plantId));
+
+                if (active) {
+                    const today = getLastWatered(0);
+                    setPlant(data
+                        ? toCatalogPlant(data, today)
+                        : null
+                    );
+                }
+            } catch (err) {
+                if (active) {
+                    setPlant(null);
+                    setError(
+                        typeof err?.message === 'string' && err.message
+                            ? err.message
+                            : 'Could not load the plant. Please try again.'
+                    );
+                }
+            } finally {
+                if (active) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        loadPlant();
+
+        return () => {
+            active = false;
+        }
+    }, [plantId, reloadKey]));
+
+    if (loading) {
+        return <LoadingIndicator message='Loading plant...' fullScreen />
+    };
+
+    if (error) {
+        return (
+            <ErrorMessage
+                message={error}
+                onRetry={() => setReloadKey((previous) => previous + 1)}
+                fullScreen
+            />
+        );
+    };
+
+    if (!plant) return <NotFound />
+
+    const status = plantStatuses[plant?.status];
+    const needsWater = plant?.status === 'water';
+    const wateringCycle = plant?.wateringFrequencyDays === 1
         ? 'Every day'
-        : `Every ${plant.wateringFrequencyDays} days`;
+        : `Every ${plant?.wateringFrequencyDays} days`;
 
     return (
         <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -86,11 +160,18 @@ export default function DetailsScreen({
                 showsVerticalScrollIndicator={false}
             >
                 <View style={styles.photoContainer}>
-                    <Image
-                        source={plant.image}
-                        style={styles.photo}
-                        accessibilityLabel={`Photo of ${plant.name}`}
-                    />
+                    {plant.image ? (
+                        <Image
+                            source={plant.image}
+                            style={styles.photo}
+                            accessibilityLabel={`Photo of ${plant.name}`}
+                        />
+                    ) : (
+                        <View style={styles.imagePlaceholder} accessible={false}>
+                            <Ionicons name="leaf-outline" size={40} color={colors.primaryGreen} />
+                        </View>
+                    )}
+
                     <View style={[styles.statusBadge, { backgroundColor: status.backgroundColor }]}>
                         <Ionicons name={status.icon} size={15} color={status.color} />
                         <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
@@ -117,7 +198,7 @@ export default function DetailsScreen({
                             </Text>
                             <Text style={styles.wateringSubtitle}>
                                 {needsWater
-                                    ? 'Your watering reminder is due today.'
+                                    ? 'Your plant is due for watering.'
                                     : 'Keep track of your watering routine.'}
                             </Text>
                         </View>
@@ -174,7 +255,7 @@ export default function DetailsScreen({
                         <Text style={styles.notesTitle} accessibilityRole="header">My notes</Text>
                     </View>
                     <Text style={styles.notesText}>
-                        {plant.notes.trim() ? plant.notes : 'No notes yet. Add a few words when you edit this plant.'}
+                        {plant.notes?.trim() || 'No notes yet. Add a few words when you edit this plant.'}
                     </Text>
                 </View>
 
@@ -267,6 +348,13 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+    },
+    imagePlaceholder: {
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.lightGreenBackground,
     },
     statusBadge: {
         position: 'absolute',
