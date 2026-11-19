@@ -9,6 +9,22 @@ export function toCatalogPlant(plant, today) {
     const hasWateringDate = Number.isFinite(daysAgo) && daysAgo >= 0;
     const frequency = Number(plant.wateringFrequencyDays);
 
+    const daysUntilWatering = frequency - daysAgo;
+
+    const lastWateredLabel = daysAgo === 0
+        ? 'Today'
+        : `${daysAgo} days ago`;
+
+    const nextWateringLabel = daysUntilWatering === 0
+        ? 'Due today'
+        : daysUntilWatering > 0
+            ? `In ${daysUntilWatering} ${
+                daysUntilWatering === 1 ? 'day' : 'days'
+            }`
+            : `${Math.abs(daysUntilWatering)} ${
+                daysUntilWatering === -1 ? 'day' : 'days'
+            } overdue`;
+
     let wateringInfo = 'Last watering date unknown';
 
     if (hasWateringDate) {
@@ -24,6 +40,8 @@ export function toCatalogPlant(plant, today) {
         status: !hasWateringDate || !Number.isFinite(frequency) || frequency < 1
             ? 'unknown'
             : daysAgo >= frequency ? 'water' : 'healthy',
-        wateringInfo
+        wateringInfo,
+        lastWateredLabel,
+        nextWateringLabel
     }
 }
