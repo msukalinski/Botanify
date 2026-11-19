@@ -24,7 +24,7 @@ export async function createPlant(newPlant) {
     return data;
 }
 
-export async function getPlants(newPlant) {
+export async function getPlants() {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError) {
