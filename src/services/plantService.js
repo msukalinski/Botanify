@@ -47,3 +47,28 @@ export async function getPlants() {
 
     return data ?? [];
 }
+
+export async function getPlantById(plantId) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError) {
+        throw authError;
+    }
+
+    if (!user) {
+        throw new Error('Log in to view plant details');
+    }
+
+    const { data, error } = await supabase
+        .from('plants')
+        .select('*')
+        .eq('id', plantId)
+        .eq('ownerId', user.id)
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
