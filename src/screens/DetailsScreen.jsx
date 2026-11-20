@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
+    ActivityIndicator,
+    Alert,
     Image,
     Pressable,
     ScrollView,
@@ -14,7 +16,7 @@ import {
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { getPlantById } from '../services/plantService';
+import { getPlantById, updateWaterDate } from '../services/plantService';
 
 import { getLastWatered } from '../utils/getLastWatered';
 import { toCatalogPlant } from '../utils/toCatalogPlant';
@@ -22,9 +24,9 @@ import { toCatalogPlant } from '../utils/toCatalogPlant';
 import CareTile from '../components/details/CareTile';
 import LoadingIndicator from '../components/loading-indicator/LoadingIndicator';
 import ErrorMessage from '../components/error-message/ErrorMessage';
+import NotFound from '../components/not-found/NotFound';
 
 import { colors } from '../theme';
-import NotFound from '../components/not-found/NotFound';
 
 const plantStatuses = {
     unknown: {
@@ -56,7 +58,6 @@ const plantStatuses = {
 export default function DetailsScreen({
     navigation,
     route,
-    onMarkWatered,
     onOpenReminders,
     onDeleteRequest,
 }) {
@@ -66,7 +67,9 @@ export default function DetailsScreen({
 
     const [plant, setPlant] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [updating, setUpdating] = useState(false);
+    const [loadingError, setLoadingError] = useState('');
+    const [updatingError, setUpdatingError] = useState('');
     const [reloadKey, setReloadKey] = useState(0);
 
     useFocusEffect(useCallback(() => {
@@ -74,7 +77,7 @@ export default function DetailsScreen({
 
         const loadPlant = async () => {
             setLoading(true);
-            setError('');
+            setLoadingError('');
 
             try {
                 const data = await (getPlantById(plantId));
@@ -89,7 +92,7 @@ export default function DetailsScreen({
             } catch (err) {
                 if (active) {
                     setPlant(null);
-                    setError(
+                    setLoadingError(
                         typeof err?.message === 'string' && err.message
                             ? err.message
                             : 'Could not load the plant. Please try again.'
@@ -109,14 +112,64 @@ export default function DetailsScreen({
         }
     }, [plantId, reloadKey]));
 
+    const onMarkWatered = async () => {
+        if (updating || !plant) {
+            return;
+        }
+
+        setUpdating(true);
+        setUpdatingError('');
+
+        try {
+            const updatedPlant = await updateWaterDate(plant.id);
+
+            setPlant(toCatalogPlant(updatedPlant, getLastWatered(0)));
+        } catch (err) {
+            setUpdatingError(
+                typeof err?.message === 'string' && err.message
+                    ? err.message
+                    : 'Could not update the watering info. Please try again.',
+            );
+        } finally {
+            setUpdating(false);
+        }
+    }
+
+    const handleWaterPress = () => {
+        if (updating || !plant || plant.lastWateredAt === getLastWatered(0)) {
+            return;
+        }
+
+        if (plant.status === 'healthy') {
+            Alert.alert(
+                'Water earlier?',
+                'This plant is not due for watering yet. Mark it as watered today?',
+                [
+                    {
+                        text: 'Cancel',
+                        style: 'cancel',
+                    },
+                    {
+                        text: 'Mark as watered',
+                        onPress: onMarkWatered,
+                    }
+                ]
+            );
+
+            return;
+        }
+
+        onMarkWatered();
+    };
+
     if (loading) {
         return <LoadingIndicator message='Loading plant...' fullScreen />
     };
 
-    if (error) {
+    if (loadingError) {
         return (
             <ErrorMessage
-                message={error}
+                message={loadingError}
                 onRetry={() => setReloadKey((previous) => previous + 1)}
                 fullScreen
             />
@@ -124,6 +177,9 @@ export default function DetailsScreen({
     };
 
     if (!plant) return <NotFound />
+
+    const wateredToday = plant.lastWateredAt === getLastWatered(0);
+    const wateringDisabled = updating || wateredToday;
 
     const status = plantStatuses[plant?.status];
     const needsWater = plant?.status === 'water';
@@ -219,14 +275,41 @@ export default function DetailsScreen({
                     </View>
 
                     <Pressable
-                        style={({ pressed }) => [styles.waterButton, pressed && styles.pressed]}
-                        onPress={() => onMarkWatered?.(plant.id)}
+                        style={({ pressed }) => [
+                            styles.waterButton,
+                            wateringDisabled && styles.disabled,
+                            pressed && !wateringDisabled && styles.pressed,
+                        ]}
+                        onPress={handleWaterPress}
+                        disabled={wateringDisabled}
                         accessibilityRole="button"
-                        accessibilityLabel={`Mark ${plant.name} as watered`}
+                        accessibilityLabel={
+                            updating
+                                ? 'Updating water info...'
+                                : wateredToday
+                                    ? `${plant.name} was watered today`
+                                    : `Mark ${plant.name} as watered`
+                        }
+                        accessibilityState={{ disabled: wateringDisabled, busy: updating }}
                     >
-                        <Ionicons name="water-outline" size={20} color="#FFFFFF" />
-                        <Text style={styles.waterButtonText}>Mark as watered</Text>
+                        {updating ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                        ) : (
+                            <Ionicons name="water-outline" size={20} color="#FFFFFF" />
+                        )}
+                        <Text style={styles.waterButtonText}>
+                            {updating
+                                ? 'Updating water info...'
+                                : wateredToday
+                                    ? 'Watered today ✓'
+                                    : 'Mark as watered'}
+                        </Text>
                     </Pressable>
+                    {updatingError && (
+                        <Text style={styles.error} accessibilityRole='alert'>
+                            {updatingError}
+                        </Text>
+                    )}
                 </View>
 
                 <View style={styles.section}>
@@ -285,7 +368,7 @@ export default function DetailsScreen({
                     <Text style={styles.deleteButtonText}>Delete plant</Text>
                 </Pressable>
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
@@ -484,6 +567,11 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         textAlign: 'center',
     },
+    error: {
+        fontSize: 12,
+        lineHeight: 18,
+        color: '#A63D32',
+    },
     section: {
         gap: 13,
     },
@@ -580,4 +668,7 @@ const styles = StyleSheet.create({
     pressed: {
         opacity: 0.7,
     },
+    disabled: {
+        opacity: 0.5,
+    }
 });
