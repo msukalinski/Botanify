@@ -111,3 +111,36 @@ export async function updateWaterDate(plantId) {
 
     return data;
 }
+
+export async function deletePlant(plantId) {
+    const {
+        data: { user },
+        error: authError
+    } = await supabase.auth.getUser();
+
+    if (authError) {
+        throw authError;
+    }
+
+    if (!user) {
+        throw new Error('Log in to delete this plant');
+    }
+
+    const { data, error } = await supabase
+        .from('plants')
+        .delete()
+        .eq('id', plantId)
+        .eq('ownerId', user.id)
+        .select('id')
+        .maybeSingle();
+
+    if (error) {
+        throw error;
+    }
+
+    if (!data) {
+        throw new Error('Plant was not found or you cannot delete it.');
+    }
+
+    return data;
+}
