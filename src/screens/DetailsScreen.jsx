@@ -305,7 +305,7 @@ export default function DetailsScreen({
                                     : 'Mark as watered'}
                         </Text>
                     </Pressable>
-                    {updatingError && (
+                    {Boolean(updatingError) && (
                         <Text style={styles.error} accessibilityRole='alert'>
                             {updatingError}
                         </Text>
