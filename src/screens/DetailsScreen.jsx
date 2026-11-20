@@ -28,7 +28,7 @@ import NotFound from '../components/not-found/NotFound';
 
 const plantStatuses = {
     unknown: {
-        label: 'Watering date unknown',
+        label: 'Status unknown',
         icon: 'help-circle-outline',
         color: colors.secondaryText,
         backgroundColor: colors.lightGreenBackground,

@@ -11,7 +11,7 @@ import { colors } from '../../theme';
 
 const statusStyles = {
     unknown: {
-        label: 'Watering date unknown',
+        label: 'Status unknown',
         icon: 'help-circle-outline',
         color: colors.secondaryText,
         backgroundColor: colors.lightGreenBackground,

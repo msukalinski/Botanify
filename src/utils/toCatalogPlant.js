@@ -1,36 +1,38 @@
 export function toCatalogPlant(plant, today) {
     const lastWateredDate = plant.lastWateredAt;
+
     const daysAgo = lastWateredDate
         ? Math.round((
             Date.parse(`${today}T00:00:00Z`)
             - Date.parse(`${lastWateredDate}T00:00:00Z`)
         ) / 86400000)
         : null;
+
     const hasWateringDate = Number.isFinite(daysAgo) && daysAgo >= 0;
     const frequency = Number(plant.wateringFrequencyDays);
 
     const daysUntilWatering = frequency - daysAgo;
 
-    const lastWateredLabel = daysAgo === 0
-        ? 'Today'
-        : `${daysAgo} days ago`;
-
-    const nextWateringLabel = daysUntilWatering === 0
-        ? 'Due today'
-        : daysUntilWatering > 0
-            ? `In ${daysUntilWatering} ${
-                daysUntilWatering === 1 ? 'day' : 'days'
-            }`
-            : `${Math.abs(daysUntilWatering)} ${
-                daysUntilWatering === -1 ? 'day' : 'days'
-            } overdue`;
-
     let wateringInfo = 'Last watering date unknown';
+    let lastWateredLabel = 'Not sure';
+    let nextWateringLabel = 'Water once to start tracking';
 
     if (hasWateringDate) {
         wateringInfo = daysAgo === 0
             ? 'Last watered today'
             : `Last watered ${daysAgo} days ago`;
+
+        lastWateredLabel = daysAgo === 0
+            ? 'Today'
+            : `${daysAgo} days ago`;
+
+        nextWateringLabel = daysUntilWatering === 0
+            ? 'Due today'
+            : daysUntilWatering > 0
+                ? `In ${daysUntilWatering} ${daysUntilWatering === 1 ? 'day' : 'days'
+                }`
+                : `${Math.abs(daysUntilWatering)} ${daysUntilWatering === -1 ? 'day' : 'days'
+                } overdue`;
     }
 
     return {
