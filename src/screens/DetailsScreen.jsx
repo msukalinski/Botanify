@@ -16,7 +16,7 @@ import {
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { getPlantById, updateWaterDate } from '../services/plantService';
+import { deletePlant, getPlantById, updateWaterDate } from '../services/plantService';
 
 import { getLastWatered } from '../utils/getLastWatered';
 import { toCatalogPlant } from '../utils/toCatalogPlant';
@@ -58,7 +58,6 @@ const plantStatuses = {
 export default function DetailsScreen({
     navigation,
     route,
-    onOpenReminders,
     onDeleteRequest,
 }) {
     const insets = useSafeAreaInsets();
@@ -68,8 +67,10 @@ export default function DetailsScreen({
     const [plant, setPlant] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const [loadingError, setLoadingError] = useState('');
     const [updatingError, setUpdatingError] = useState('');
+    const [deleteError, setDeleteError] = useState('');
     const [reloadKey, setReloadKey] = useState(0);
 
     useFocusEffect(useCallback(() => {
@@ -112,7 +113,7 @@ export default function DetailsScreen({
         }
     }, [plantId, reloadKey]));
 
-    const onMarkWatered = async () => {
+    const markWateredHandler = async () => {
         if (updating || !plant) {
             return;
         }
@@ -135,7 +136,7 @@ export default function DetailsScreen({
         }
     }
 
-    const handleWaterPress = () => {
+    const waterPressHandler = () => {
         if (updating || !plant || plant.lastWateredAt === getLastWatered(0)) {
             return;
         }
@@ -151,7 +152,7 @@ export default function DetailsScreen({
                     },
                     {
                         text: 'Mark as watered',
-                        onPress: onMarkWatered,
+                        onPress: markWateredHandler,
                     }
                 ]
             );
@@ -159,7 +160,7 @@ export default function DetailsScreen({
             return;
         }
 
-        onMarkWatered();
+        markWateredHandler();
     };
 
     if (loading) {
@@ -175,6 +176,65 @@ export default function DetailsScreen({
             />
         );
     };
+
+    const openRemindersHandler = (plantId) => {
+        navigation.navigate('MainStack', {
+            screen: 'Reminders',
+            params: {
+                targetPlantId: plantId,
+            },
+        });
+    }
+
+    const deletePlantHandler = async () => {
+        if (deleting || updating || !plant) {
+            return;
+        }
+
+        setDeleting(true);
+        setDeleteError('');
+
+        // const confirmed = 
+
+        try {
+            await deletePlant(plantId);
+        } catch (err) {
+            setDeleteError(
+                typeof err?.message === 'string'
+                    ? err.message
+                    : 'Could not delete this plant. Please try again.'
+            );
+            return;
+        } finally {
+            setDeleteError(false);
+        }
+
+        navigation.popTo('MainStack', {
+            screen: 'Home',
+        });
+    };
+
+    const deletePressHandler = () => {
+        if (deleting || updating || !plant) {
+            return;
+        }
+
+        Alert.alert(
+            'Delete plant',
+            `Delete ${plant.name}? This cannot be undone.`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: deletePlantHandler,
+                }
+            ]
+        )
+    }
 
     if (!plant) return <NotFound />
 
@@ -280,7 +340,7 @@ export default function DetailsScreen({
                             wateringDisabled && styles.disabled,
                             pressed && !wateringDisabled && styles.pressed,
                         ]}
-                        onPress={handleWaterPress}
+                        onPress={waterPressHandler}
                         disabled={wateringDisabled}
                         accessibilityRole="button"
                         accessibilityLabel={
@@ -344,7 +404,7 @@ export default function DetailsScreen({
 
                 <Pressable
                     style={({ pressed }) => [styles.reminderCard, pressed && styles.pressed]}
-                    onPress={() => onOpenReminders?.(plant.id)}
+                    onPress={() => openRemindersHandler(plant.id)}
                     accessibilityRole="button"
                     accessibilityLabel={`Open watering reminders for ${plant.name}`}
                 >
@@ -360,12 +420,28 @@ export default function DetailsScreen({
 
                 <Pressable
                     style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
-                    onPress={() => onDeleteRequest?.(plant.id)}
+                    onPress={deletePressHandler}
+                    disabled={deleting}
                     accessibilityRole="button"
-                    accessibilityLabel={`Delete ${plant.name}`}
+                    accessibilityLabel={
+                        deleting
+                            ? 'Deleting plant...'
+                            : `Delete plant`
+                    }
+                    accessibilityState={{ disabled: deleting, busy: deleting }}
                 >
-                    <Ionicons name="trash-outline" size={18} color="#A63D32" />
-                    <Text style={styles.deleteButtonText}>Delete plant</Text>
+                    {deleting ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                        <Ionicons name="trash-outline" size={18} color="#A63D32" />
+                    )}
+                    <Text style={styles.deleteButtonText}>
+                        {deleting ? (
+                            'Deleting plant'
+                        ): (
+                            'Delete plant'
+                        )}
+                    </Text>
                 </Pressable>
             </ScrollView>
         </SafeAreaView >
