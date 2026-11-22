@@ -206,7 +206,7 @@ export default function DetailsScreen({
             );
             return;
         } finally {
-            setDeleteError(false);
+            setDeleting(false);
         }
 
         navigation.popTo('MainStack', {
@@ -438,11 +438,17 @@ export default function DetailsScreen({
                     <Text style={styles.deleteButtonText}>
                         {deleting ? (
                             'Deleting plant'
-                        ): (
+                        ) : (
                             'Delete plant'
                         )}
                     </Text>
                 </Pressable>
+
+                {deleteError ? (
+                    <Text style={styles.error} accessibilityRole="alert">
+                        {deleteError}
+                    </Text>
+                ) : null}
             </ScrollView>
         </SafeAreaView >
     );
