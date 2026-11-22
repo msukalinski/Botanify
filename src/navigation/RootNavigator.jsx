@@ -23,7 +23,7 @@ export default function RootNavigator() {
             screenOptions={{
                 headerShown: false,
                 cardStyle: Platform.OS === 'web'
-                    ? { flex: 1 }
+                    ? { flex: 1, height: '100%', minHeight: 0 }
                     : undefined,
             }}
         >

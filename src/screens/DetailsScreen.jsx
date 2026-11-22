@@ -1,7 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
-    Alert,
     Image,
     Pressable,
     ScrollView,
@@ -20,6 +19,8 @@ import { deletePlant, getPlantById, updateWaterDate } from '../services/plantSer
 
 import { getLastWatered } from '../utils/getLastWatered';
 import { toCatalogPlant } from '../utils/toCatalogPlant';
+import { confirmAction } from '../utils/confirmAction';
+import useCurrentDate from '../hooks/useCurrentDate';
 
 import CareTile from '../components/details/CareTile';
 import LoadingIndicator from '../components/loading-indicator/LoadingIndicator';
@@ -57,14 +58,13 @@ const plantStatuses = {
 
 export default function DetailsScreen({
     navigation,
-    route,
-    onDeleteRequest,
+    route
 }) {
     const insets = useSafeAreaInsets();
-
     const { plantId } = route.params;
+    const { today, refreshToday } = useCurrentDate();
 
-    const [plant, setPlant] = useState(null);
+    const [plantData, setPlantData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [deleting, setDeleting] = useState(false);
@@ -72,6 +72,16 @@ export default function DetailsScreen({
     const [updatingError, setUpdatingError] = useState('');
     const [deleteError, setDeleteError] = useState('');
     const [reloadKey, setReloadKey] = useState(0);
+    const mutationPending = useRef(false);
+    const confirmationPending = useRef(false);
+    const mounted = useRef(false);
+
+    useEffect(() => {
+        mounted.current = true;
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
 
     useFocusEffect(useCallback(() => {
         let active = true;
@@ -81,22 +91,18 @@ export default function DetailsScreen({
             setLoadingError('');
 
             try {
-                const data = await (getPlantById(plantId));
+                const data = await getPlantById(plantId);
 
                 if (active) {
-                    const today = getLastWatered(0);
-                    setPlant(data
-                        ? toCatalogPlant(data, today)
-                        : null
-                    );
+                    setPlantData(data);
                 }
             } catch (err) {
                 if (active) {
-                    setPlant(null);
+                    setPlantData(null);
                     setLoadingError(
                         typeof err?.message === 'string' && err.message
                             ? err.message
-                            : 'Could not load the plant. Please try again.'
+                            : 'Could not load the plant. Please try again.',
                     );
                 }
             } finally {
@@ -110,63 +116,149 @@ export default function DetailsScreen({
 
         return () => {
             active = false;
-        }
+        };
     }, [plantId, reloadKey]));
 
+    const plant = plantData
+        ? toCatalogPlant(plantData, today)
+        : null;
+    const mutating = updating || deleting;
+
     const markWateredHandler = async () => {
-        if (updating || !plant) {
+        if (mutationPending.current || !plant || plant.lastWateredAt === getLastWatered(0)) {
             return;
         }
 
+        mutationPending.current = true;
         setUpdating(true);
         setUpdatingError('');
 
         try {
             const updatedPlant = await updateWaterDate(plant.id);
-
-            setPlant(toCatalogPlant(updatedPlant, getLastWatered(0)));
+            if (mounted.current) {
+                refreshToday();
+                setPlantData(updatedPlant);
+            }
         } catch (err) {
-            setUpdatingError(
-                typeof err?.message === 'string' && err.message
-                    ? err.message
-                    : 'Could not update the watering info. Please try again.',
-            );
+            if (mounted.current) {
+                setUpdatingError(
+                    typeof err?.message === 'string' && err.message
+                        ? err.message
+                        : 'Could not update the watering info. Please try again.',
+                );
+            }
         } finally {
-            setUpdating(false);
+            mutationPending.current = false;
+            if (mounted.current) {
+                setUpdating(false);
+            }
         }
-    }
+    };
 
-    const waterPressHandler = () => {
-        if (updating || !plant || plant.lastWateredAt === getLastWatered(0)) {
+    const waterPressHandler = async () => {
+        if (mutationPending.current || confirmationPending.current || !plant) {
             return;
         }
 
-        if (plant.status === 'healthy') {
-            Alert.alert(
-                'Water earlier?',
-                'This plant is not due for watering yet. Mark it as watered today?',
-                [
-                    {
-                        text: 'Cancel',
-                        style: 'cancel',
-                    },
-                    {
-                        text: 'Mark as watered',
-                        onPress: markWateredHandler,
-                    }
-                ]
-            );
-
+        const currentDay = getLastWatered(0);
+        if (plant.lastWateredAt === currentDay) {
             return;
         }
 
-        markWateredHandler();
+        refreshToday();
+
+        if (toCatalogPlant(plantData, currentDay).status === 'healthy') {
+            confirmationPending.current = true;
+            let confirmed;
+            try {
+                confirmed = await confirmAction({
+                    title: 'Water earlier?',
+                    message: 'This plant is not due for watering yet. Mark it as watered today?',
+                    confirmText: 'Mark as watered',
+                });
+            } finally {
+                confirmationPending.current = false;
+            }
+            if (!confirmed || !mounted.current) {
+                return;
+            }
+        }
+
+        await markWateredHandler();
+    };
+
+    const openRemindersHandler = () => {
+        if (mutationPending.current || !plant) {
+            return;
+        }
+
+        navigation.navigate('MainStack', {
+            screen: 'Reminders',
+            params: { targetPlantId: plant.id },
+        });
+    };
+
+    const deletePlantHandler = async () => {
+        if (mutationPending.current || !plant) {
+            return;
+        }
+
+        mutationPending.current = true;
+        setDeleting(true);
+        setDeleteError('');
+
+        try {
+            await deletePlant(plant.id);
+        } catch (err) {
+            if (mounted.current) {
+                setDeleteError(
+                    typeof err?.message === 'string' && err.message
+                        ? err.message
+                        : 'Could not delete this plant. Please try again.',
+                );
+            }
+            return;
+        } finally {
+            mutationPending.current = false;
+            if (mounted.current) {
+                setDeleting(false);
+            }
+        }
+
+        if (mounted.current) {
+            navigation.popTo('MainStack', {
+                screen: 'Home'
+            });
+        }
+    };
+
+    const deletePressHandler = async () => {
+        if (mutationPending.current || confirmationPending.current || !plant) {
+            return;
+        }
+
+        confirmationPending.current = true;
+        let confirmed;
+        try {
+            confirmed = await confirmAction({
+                title: 'Delete plant',
+                message: `Delete ${plant.name}? This cannot be undone.`,
+                confirmText: 'Delete',
+                destructive: true,
+            });
+        } finally {
+            confirmationPending.current = false;
+        }
+
+        if (confirmed && mounted.current) {
+            await deletePlantHandler();
+        }
     };
 
     if (loading) {
-        return <LoadingIndicator message='Loading plant...' fullScreen />
-    };
-
+        return <LoadingIndicator message="Loading plant..." fullScreen />;
+    }
+    
     if (loadingError) {
         return (
             <ErrorMessage
@@ -175,95 +267,38 @@ export default function DetailsScreen({
                 fullScreen
             />
         );
-    };
-
-    const openRemindersHandler = (plantId) => {
-        navigation.navigate('MainStack', {
-            screen: 'Reminders',
-            params: {
-                targetPlantId: plantId,
-            },
-        });
     }
+    if (!plant) return <NotFound />;
 
-    const deletePlantHandler = async () => {
-        if (deleting || updating || !plant) {
-            return;
-        }
-
-        setDeleting(true);
-        setDeleteError('');
-
-        // const confirmed = 
-
-        try {
-            await deletePlant(plantId);
-        } catch (err) {
-            setDeleteError(
-                typeof err?.message === 'string'
-                    ? err.message
-                    : 'Could not delete this plant. Please try again.'
-            );
-            return;
-        } finally {
-            setDeleting(false);
-        }
-
-        navigation.popTo('MainStack', {
-            screen: 'Home',
-        });
-    };
-
-    const deletePressHandler = () => {
-        if (deleting || updating || !plant) {
-            return;
-        }
-
-        Alert.alert(
-            'Delete plant',
-            `Delete ${plant.name}? This cannot be undone.`,
-            [
-                {
-                    text: 'Cancel',
-                    style: 'cancel'
-                },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: deletePlantHandler,
-                }
-            ]
-        )
-    }
-
-    if (!plant) return <NotFound />
-
-    const wateredToday = plant.lastWateredAt === getLastWatered(0);
-    const wateringDisabled = updating || wateredToday;
-
-    const status = plantStatuses[plant?.status];
-    const needsWater = plant?.status === 'water';
-    const wateringCycle = plant?.wateringFrequencyDays === 1
+    const wateredToday = plant.lastWateredAt === today;
+    const wateringDisabled = mutating || wateredToday;
+    const status = plantStatuses[plant.status] ?? plantStatuses.unknown;
+    const needsWater = plant.status === 'water';
+    const wateringCycle = plant.wateringFrequencyDays === 1
         ? 'Every day'
-        : `Every ${plant?.wateringFrequencyDays} days`;
+        : `Every ${plant.wateringFrequencyDays} days`;
 
     return (
         <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
             <View style={styles.toolbar}>
                 <Pressable
-                    style={({ pressed }) => [styles.toolbarButton, pressed && styles.pressed]}
+                    style={({ pressed }) => [styles.toolbarButton, mutating && styles.disabled, pressed && !mutating && styles.pressed]}
                     onPress={() => navigation.goBack()}
+                    disabled={mutating}
                     accessibilityRole="button"
                     accessibilityLabel="Back to plants"
+                    accessibilityState={{ disabled: mutating }}
                 >
                     <Ionicons name="arrow-back" size={24} color={colors.mainText} />
                 </Pressable>
                 <Text style={styles.toolbarTitle}>Plant details</Text>
                 <Pressable
-                    style={({ pressed }) => [styles.toolbarButton, pressed && styles.pressed]}
+                    style={({ pressed }) => [styles.toolbarButton, mutating && styles.disabled, pressed && !mutating && styles.pressed]}
                     onPress={() => navigation.navigate('EditPlant', { plantId })}
+                    disabled={mutating}
                     accessibilityRole="button"
                     accessibilityLabel="Edit plant"
+                    accessibilityState={{ disabled: mutating }}
                 >
                     <Ionicons name="create-outline" size={23} color={colors.primaryGreen} />
                 </Pressable>
@@ -403,10 +438,12 @@ export default function DetailsScreen({
                 </View>
 
                 <Pressable
-                    style={({ pressed }) => [styles.reminderCard, pressed && styles.pressed]}
-                    onPress={() => openRemindersHandler(plant.id)}
+                    style={({ pressed }) => [styles.reminderCard, mutating && styles.disabled, pressed && !mutating && styles.pressed]}
+                    onPress={openRemindersHandler}
+                    disabled={mutating}
                     accessibilityRole="button"
                     accessibilityLabel={`Open watering reminders for ${plant.name}`}
+                    accessibilityState={{ disabled: mutating }}
                 >
                     <View style={styles.reminderIcon} accessible={false}>
                         <Ionicons name="notifications-outline" size={23} color={colors.primaryGreen} />
@@ -419,19 +456,19 @@ export default function DetailsScreen({
                 </Pressable>
 
                 <Pressable
-                    style={({ pressed }) => [styles.deleteButton, pressed && styles.pressed]}
+                    style={({ pressed }) => [styles.deleteButton, mutating && styles.disabled, pressed && !mutating && styles.pressed]}
                     onPress={deletePressHandler}
-                    disabled={deleting}
+                    disabled={mutating}
                     accessibilityRole="button"
                     accessibilityLabel={
                         deleting
                             ? 'Deleting plant...'
                             : `Delete plant`
                     }
-                    accessibilityState={{ disabled: deleting, busy: deleting }}
+                    accessibilityState={{ disabled: mutating, busy: deleting }}
                 >
                     {deleting ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <ActivityIndicator size="small" color="#A63D32" />
                     ) : (
                         <Ionicons name="trash-outline" size={18} color="#A63D32" />
                     )}
@@ -443,7 +480,6 @@ export default function DetailsScreen({
                         )}
                     </Text>
                 </Pressable>
-
                 {deleteError ? (
                     <Text style={styles.error} accessibilityRole="alert">
                         {deleteError}

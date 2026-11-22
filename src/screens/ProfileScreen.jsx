@@ -221,11 +221,11 @@ export default function ProfileScreen({
                     </Text>
                 </Pressable>
 
-                {error && (
+                {error ? (
                     <Text style={styles.error} accessibilityRole='alert'>
                         {error}
                     </Text>
-                )}
+                ) : null}
 
                 <View style={styles.footer} accessible={false}>
                     <Ionicons name="leaf-outline" size={15} color={colors.secondaryText} />

@@ -20,11 +20,11 @@ export function toCatalogPlant(plant, today) {
     if (hasWateringDate) {
         wateringInfo = daysAgo === 0
             ? 'Last watered today'
-            : `Last watered ${daysAgo} days ago`;
+            : `Last watered ${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago`;
 
         lastWateredLabel = daysAgo === 0
             ? 'Today'
-            : `${daysAgo} days ago`;
+            : `${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago`;
 
         nextWateringLabel = daysUntilWatering === 0
             ? 'Due today'

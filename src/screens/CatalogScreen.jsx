@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import {
@@ -20,7 +20,7 @@ import ErrorMessage from '../components/error-message/ErrorMessage';
 import FilterChip from '../components/catalog/FilterChip';
 import CatalogPlantCard from '../components/catalog/CatalogPlantCard';
 
-import { getLastWatered } from '../utils/getLastWatered';
+import useCurrentDate from '../hooks/useCurrentDate';
 import { toCatalogPlant } from '../utils/toCatalogPlant';
 
 import { colors } from '../theme';
@@ -30,7 +30,12 @@ export default function CatalogScreen({
     route,
     onPlantMenu,
 }) {
-    const [plants, setPlants] = useState([]);
+    const [plantData, setPlants] = useState([]);
+    const { today } = useCurrentDate();
+    const plants = useMemo(
+        () => plantData.map((plant) => toCatalogPlant(plant, today)),
+        [plantData, today],
+    );
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
     const [reloadKey, setReloadKey] = useState(0);
@@ -59,8 +64,7 @@ export default function CatalogScreen({
                 const data = await getPlants();
 
                 if (active) {
-                    const today = getLastWatered(0);
-                    setPlants(data.map((plant) => toCatalogPlant(plant, today)));
+                    setPlants(data);
                 }
             } catch (err) {
                 if (active) {
@@ -202,8 +206,8 @@ export default function CatalogScreen({
                         onRetry={() => setReloadKey((previous) => previous + 1)}
                     />
                 ) : (
-                    < View style={styles.emptyState}>
-                        <View style={styles.emptyIcon} accessibilityActions={false}>
+                    <View style={styles.emptyState}>
+                        <View style={styles.emptyIcon} accessible={false}>
                             <Ionicons
                                 name={plants.length === 0 ? 'leaf-outline' : 'search-outline'}
                                 size={34}

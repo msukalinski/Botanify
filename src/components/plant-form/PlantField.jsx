@@ -3,13 +3,13 @@ import Ionicons from '@react-native-vector-icons/ionicons';
 
 import { colors } from '../../theme';
 
-
 export default function PlantField({
     label,
     icon,
     required = false,
     error,
     multiline = false,
+    inputRef = null,
     ...inputProps
 }) {
     return (
@@ -34,6 +34,7 @@ export default function PlantField({
 
                 <TextInput
                     {...inputProps}
+                    ref={inputRef}
                     style={[
                         styles.input,
                         multiline && styles.notesInput,
@@ -106,6 +107,7 @@ const styles = StyleSheet.create({
     },
     notesInput: {
         minHeight: 110,
+        maxHeight: 150,
         paddingTop: 0,
         paddingBottom: 14,
     },

@@ -20,6 +20,7 @@ import { createPlant } from '../services/plantService';
 import PlantField from '../components/plant-form/PlantField';
 import Choice from '../components/plant-form/Choice';
 import useForm from '../hooks/useForm';
+import useKeyboardAwareScroll from '../hooks/useKeyboardAwareScroll';
 
 import { getLastWatered } from '../utils/getLastWatered';
 
@@ -57,6 +58,11 @@ export default function CreatePlantScreen({
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
     const submittingRef = useRef(false);
+    const nameInput = useRef(null);
+    const speciesInput = useRef(null);
+    const locationInput = useRef(null);
+    const notesInput = useRef(null);
+    const { scrollRef, focusInput, blurInput, onScroll, ensureInputVisible } = useKeyboardAwareScroll();
 
     const clearFieldErrors = (name) => {
         setErrors((previous) => ({
@@ -87,6 +93,7 @@ export default function CreatePlantScreen({
                 ...previous,
                 name: 'Please give your plant a name.',
             }));
+            nameInput.current?.focus();
             return;
         }
 
@@ -150,14 +157,20 @@ export default function CreatePlantScreen({
             <KeyboardAvoidingView
                 style={styles.keyboardContainer}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                enabled={Platform.OS === 'android'}
             >
                 <ScrollView
+                    ref={scrollRef}
                     style={styles.scroll}
                     contentContainerStyle={styles.content}
                     contentInsetAdjustmentBehavior="never"
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
-                    keyboardDismissMode="on-drag"
+                    keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+                    automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+                    onScroll={onScroll}
+                    scrollEventThrottle={16}
+                    onLayout={ensureInputVisible}
                 >
                     <View style={styles.introduction}>
                         <Text style={styles.title} accessibilityRole="header">Make room for green</Text>
@@ -217,6 +230,9 @@ export default function CreatePlantScreen({
                                 icon="leaf-outline"
                                 placeholder="e.g. Monstera"
                                 {...register('name')}
+                                inputRef={nameInput}
+                                onFocus={() => focusInput(nameInput.current)}
+                                onBlur={() => blurInput(nameInput.current)}
                                 error={errors.name}
                                 maxLength={80}
                             />
@@ -225,6 +241,9 @@ export default function CreatePlantScreen({
                                 icon="flower-outline"
                                 placeholder="e.g. Monstera deliciosa"
                                 {...register('species')}
+                                inputRef={speciesInput}
+                                onFocus={() => focusInput(speciesInput.current)}
+                                onBlur={() => blurInput(speciesInput.current)}
                                 autoCorrect={false}
                                 maxLength={120}
                             />
@@ -233,6 +252,9 @@ export default function CreatePlantScreen({
                                 icon="location-outline"
                                 placeholder="e.g. Living room"
                                 {...register('location')}
+                                inputRef={locationInput}
+                                onFocus={() => focusInput(locationInput.current)}
+                                onBlur={() => blurInput(locationInput.current)}
                                 maxLength={100}
                             />
                         </View>
@@ -354,6 +376,10 @@ export default function CreatePlantScreen({
                             icon="document-text-outline"
                             placeholder="A gift from a friend? A favourite sunny spot? Write it here."
                             value={values.notes}
+                            inputRef={notesInput}
+                            onFocus={() => focusInput(notesInput.current)}
+                            onBlur={() => blurInput(notesInput.current)}
+                            onContentSizeChange={ensureInputVisible}
                             onChangeText={(value) => changeHandler('notes', value)}
                             multiline
                             maxLength={1000}

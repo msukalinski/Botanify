@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View } from "react-native";
 
 import { colors } from "../theme";
 import Ionicons from "@react-native-vector-icons/ionicons";
@@ -26,7 +26,7 @@ export default function getBottomTabOptions(routeName, bottomInset = 0) {
         tabBarActiveTintColor: colors.primaryGreen,
         tabBarInactiveTintColor: colors.secondaryText,
         tabBarLabelPosition: 'below-icon',
-        tabBarHideOnKeyboard: true,
+        tabBarHideOnKeyboard: Platform.OS !== 'web',
         tabBarAccessibilityLabel: tab.label,
         tabBarStyle: [
             styles.tabBar,
@@ -66,6 +66,7 @@ export default function getBottomTabOptions(routeName, bottomInset = 0) {
 
 const styles = StyleSheet.create({
     scene: {
+        minHeight: 0,
         backgroundColor: colors.screenBackground,
     },
     tabBar: {
