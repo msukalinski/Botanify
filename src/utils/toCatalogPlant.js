@@ -10,8 +10,9 @@ export function toCatalogPlant(plant, today) {
 
     const hasWateringDate = Number.isFinite(daysAgo) && daysAgo >= 0;
     const frequency = Number(plant.wateringFrequencyDays);
+    const hasWateringFrequency = Number.isInteger(frequency) && frequency >= 1 && frequency <= 30;
 
-    const daysUntilWatering = frequency - daysAgo;
+    const daysUntilWatering = hasWateringDate && hasWateringFrequency ? frequency - daysAgo : null;
 
     let wateringInfo = 'Last watering date unknown';
     let lastWateredLabel = 'Not sure';
@@ -26,22 +27,27 @@ export function toCatalogPlant(plant, today) {
             ? 'Today'
             : `${daysAgo} ${daysAgo === 1 ? 'day' : 'days'} ago`;
 
-        nextWateringLabel = daysUntilWatering === 0
-            ? 'Due today'
-            : daysUntilWatering > 0
-                ? `In ${daysUntilWatering} ${daysUntilWatering === 1 ? 'day' : 'days'
-                }`
-                : `${Math.abs(daysUntilWatering)} ${daysUntilWatering === -1 ? 'day' : 'days'
-                } overdue`;
+        if (daysUntilWatering !== null) {
+            nextWateringLabel = daysUntilWatering === 0
+                ? 'Due today'
+                : daysUntilWatering > 0
+                    ? `In ${daysUntilWatering} ${daysUntilWatering === 1 ? 'day' : 'days'
+                    }`
+                    : `${Math.abs(daysUntilWatering)} ${daysUntilWatering === -1 ? 'day' : 'days'
+                    } overdue`;
+        }
+
     }
 
     return {
         ...plant,
         image: null,
         location: plant.location?.trim() || 'No location',
-        status: !hasWateringDate || !Number.isFinite(frequency) || frequency < 1
+        daysAgo: hasWateringDate ? daysAgo : null,
+        daysUntilWatering,
+        status: daysUntilWatering === null
             ? 'unknown'
-            : daysAgo >= frequency ? 'water' : 'healthy',
+            : daysUntilWatering <= 0 ? 'water' : 'healthy',
         wateringInfo,
         lastWateredLabel,
         nextWateringLabel

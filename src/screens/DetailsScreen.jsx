@@ -192,7 +192,7 @@ export default function DetailsScreen({
             return;
         }
 
-        navigation.navigate('MainStack', {
+        navigation.popTo('MainStack', {
             screen: 'Reminders',
             params: { targetPlantId: plant.id },
         });
