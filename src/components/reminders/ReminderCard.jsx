@@ -1,27 +1,30 @@
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 
 import { colors } from '../../theme';
 
 export default function ReminderCard({
     reminder,
-    completed = false,
+    wateredToday = false,
+    updating = false,
+    disabled = false,
+    highlighted = false,
+    error = undefined,
     onOpen,
-    onToggleWatered,
+    onMarkWatered,
 }) {
-    const isToday = reminder.group === 'today';
+    const isDue = reminder.group === 'today';
+    const isOverdue = reminder.group === 'overdue';
+    const isUnknown = reminder.group === 'unknown';
+    const wateringDisabled = disabled || updating || wateredToday;
 
-    const statusColor = completed
-        ? colors.primaryGreen
-        : isToday
-            ? colors.waterText
-            : colors.secondaryText;
+    const statusColor = wateredToday ? colors.primaryGreen
+        : isOverdue ? colors.overdueText
+            : isDue ? colors.waterText : colors.secondaryText;
 
-    const statusBackground = completed
-        ? '#E7EFDD'
-        : isToday
-            ? colors.waterBackground
-            : '#F0F2EB';
+    const statusBackground = wateredToday ? colors.lightGreenBackground
+        : isOverdue ? colors.overdueBackground
+            : isDue ? colors.waterBackground : '#F0F2EB';
 
     const wateringCycle = reminder.wateringFrequencyDays === 1
         ? 'Every day'
@@ -29,25 +32,33 @@ export default function ReminderCard({
 
     return (
         <View
+            testID={`reminder-card-${reminder.id}`}
             style={[
                 styles.reminderCard,
-                completed && styles.completedCard,
+                wateredToday && styles.completedCard,
+                highlighted && styles.highlightedCard
             ]}
         >
             <Pressable
                 style={({ pressed }) => [
                     styles.plantRow,
                     pressed && styles.pressed,
+                    pressed && !disabled && styles.pressed
                 ]}
                 onPress={onOpen}
+                disabled={disabled}
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${reminder.name} in ${reminder.location}`}
+                accessibilityHint={highlighted ? 'Selected from plant details.' : undefined}
+                accessibilityState={{ disabled }}
             >
-                <Image
-                    source={reminder.image}
-                    style={styles.plantImage}
-                    accessible={false}
-                />
+                {reminder.image ? (
+                    <Image source={reminder.image} style={styles.plantImage} accessible={false} />
+                ) : (
+                    <View style={[styles.plantImage, styles.imagePlaceholder]} accessible={false}>
+                        <Ionicons name="leaf-outline" size={29} color={colors.primaryGreen} />
+                    </View>
+                )}
 
                 <View style={styles.plantInfo}>
                     <Text style={styles.plantName}>
@@ -55,28 +66,22 @@ export default function ReminderCard({
                     </Text>
 
                     <View style={styles.locationRow}>
-                        <Ionicons
-                            name="location-outline"
-                            size={13}
-                            color={colors.secondaryText}
-                        />
+                        <Ionicons name="location-outline" size={13} color={colors.secondaryText} />
                         <Text style={styles.locationText}>
                             {reminder.location}
                         </Text>
                     </View>
 
                     <Text style={styles.lastWateredText}>
-                        {completed
-                            ? 'Last watered just now'
-                            : reminder.lastWateredLabel}
+                        {reminder.wateringInfo}
+                    </Text>
+
+                    <Text style={styles.lastWateredText}>
+                        {wateringCycle}
                     </Text>
                 </View>
 
-                <Ionicons
-                    name="chevron-forward"
-                    size={18}
-                    color={colors.secondaryText}
-                />
+                <Ionicons name="chevron-forward" size={18} color={colors.secondaryText} />
             </Pressable>
 
             <View style={styles.cardFooter}>
@@ -88,9 +93,9 @@ export default function ReminderCard({
                 >
                     <Ionicons
                         name={
-                            completed
-                                ? 'checkmark-circle-outline'
-                                : isToday
+                            isUnknown
+                                ? 'help-circle-outline'
+                                : isDue || isOverdue
                                     ? 'water-outline'
                                     : 'calendar-outline'
                         }
@@ -104,52 +109,40 @@ export default function ReminderCard({
                             { color: statusColor },
                         ]}
                     >
-                        {completed
-                            ? 'Watered today'
-                            : reminder.dueLabel}
+                        {isUnknown
+                            ? 'Date unknown'
+                            : reminder.dueLabel
+                        }
                     </Text>
                 </View>
 
-                {isToday ? (
-                    <Pressable
-                        style={({ pressed }) => [
-                            styles.waterButton,
-                            completed && styles.undoButton,
-                            pressed && styles.pressed,
-                        ]}
-                        onPress={onToggleWatered}
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                            `${completed
-                                ? 'Undo watering for '
-                                : 'Mark as watered: '}${reminder.name} in ${reminder.location}`
-                        }
-                    >
-                        <Ionicons
-                            name={completed ? 'arrow-undo-outline' : 'checkmark'}
-                            size={18}
-                            color={
-                                completed
-                                    ? colors.primaryGreen
-                                    : '#FFFFFF'
-                            }
-                        />
-
-                        <Text
-                            style={[
-                                styles.waterButtonText,
-                                completed && styles.undoButtonText,
-                            ]}
-                        >
-                            {completed ? 'Undo' : 'Mark as watered'}
-                        </Text>
-                    </Pressable>
-                ) : (
-                    <Text style={styles.cycleText}>
-                        {wateringCycle}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.waterButton,
+                        wateredToday && styles.wateredButton,
+                        wateringDisabled && styles.disabled,
+                        pressed && !wateringDisabled && styles.pressed,
+                    ]}
+                    onPress={onMarkWatered}
+                    disabled={wateringDisabled}
+                    accessibilityRole="button"
+                    accessibilityLabel={updating ? `Updating watering for ${reminder.name}`
+                        : wateredToday ? `${reminder.name} was watered today`
+                            : `Mark ${reminder.name} as watered`}
+                    accessibilityState={{ disabled: wateringDisabled, busy: updating }}
+                >
+                    {updating ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                        <Ionicons name={wateredToday ? 'checkmark-circle-outline' : 'water-outline'} size={18}
+                            color={wateredToday ? colors.primaryGreen : '#FFFFFF'} />
+                    )}
+                    <Text style={[styles.waterButtonText, wateredToday && styles.wateredButtonText]}>
+                        {updating ? 'Updating...' : wateredToday ? 'Watered today' : 'Mark as watered'}
                     </Text>
-                )}
+                </Pressable>
             </View>
+            {error ? <Text style={styles.error} accessibilityRole='alert'>{error}</Text> : null}
         </View>
     );
 }
@@ -251,17 +244,30 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         textAlign: 'center',
     },
-    undoButton: {
+    wateredButton: {
         backgroundColor: '#E7EFDD',
     },
-    undoButtonText: {
+    wateredButtonText: {
         color: colors.primaryGreen,
     },
-    cycleText: {
-        flexShrink: 1,
+    highlightedCard: {
+        borderWidth: 2,
+        borderColor: colors.primaryGreen,
+        backgroundColor: '#EFF6E8',
+    },
+    imagePlaceholder: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    disabled: {
+        opacity: 0.5,
+    },
+    error: {
+        paddingHorizontal: 14,
+        paddingBottom: 14,
         fontSize: 12,
         lineHeight: 18,
-        color: colors.secondaryText,
+        color: '#A63D32',
     },
     pressed: {
         opacity: 0.7,
