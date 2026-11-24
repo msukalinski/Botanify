@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import {
     ActivityIndicator,
+    Alert,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -9,18 +10,19 @@ import {
     Pressable,
     ScrollView,
     StyleSheet,
-    Switch,
     Text,
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { createPlant } from '../services/plantService';
+import { schedulePlantReminder } from '../services/notificationService';
 
 import PlantField from '../components/plant-form/PlantField';
 import Choice from '../components/plant-form/Choice';
 import useForm from '../hooks/useForm';
 import useKeyboardAwareScroll from '../hooks/useKeyboardAwareScroll';
+import PlantReminderToggle from '../components/notificanions/PlantReminderToggle';
 
 import { getLastWatered } from '../utils/getLastWatered';
 
@@ -57,6 +59,7 @@ export default function CreatePlantScreen({
 }) {
     const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
+    const [reminderBusy, setReminderBusy] = useState(false);
     const submittingRef = useRef(false);
     const nameInput = useRef(null);
     const speciesInput = useRef(null);
@@ -80,7 +83,7 @@ export default function CreatePlantScreen({
     };
 
     const addPlantHandler = async (values) => {
-        if (submittingRef.current) {
+        if (submittingRef.current || reminderBusy) {
             return;
         }
 
@@ -114,6 +117,11 @@ export default function CreatePlantScreen({
                 notes: values.notes.trim(),
                 imagePath: null,
             });
+
+            const warning = await schedulePlantReminder(createdPlant);
+            if (warning) {
+                Alert.alert('Plant saved', warning);
+            }
 
             setValues({ ...initialValues });
             setErrors({});
@@ -352,23 +360,13 @@ export default function CreatePlantScreen({
                         </View>
                     </View>
 
-                    <View style={styles.reminderCard}>
-                        <View style={styles.reminderIcon} accessible={false}>
-                            <Ionicons name="notifications-outline" size={22} color={colors.primaryGreen} />
-                        </View>
-                        <View style={styles.reminderCopy} accessible={false}>
-                            <Text style={styles.reminderTitle}>Watering reminders</Text>
-                            <Text style={styles.hint}>Remind me when watering is due.</Text>
-                        </View>
-                        <Switch
-                            value={values.remindersEnabled}
-                            onValueChange={(value) => changeHandler('remindersEnabled', value)}
-                            trackColor={{ false: '#D7DDCE', true: '#B6CC9E' }}
-                            thumbColor={values.remindersEnabled ? colors.primaryGreen : "#FFFFFF"}
-                            ios_backgroundColor="#D7DDCE"
-                            accessibilityLabel="Watering reminders"
-                        />
-                    </View>
+                    <PlantReminderToggle
+                        value={values.remindersEnabled}
+                        onChange={(enabled) => changeHandler('remindersEnabled', enabled)}
+                        hasWateringDate={values.lastWateredDaysAgo !== null}
+                        disabled={submitting}
+                        onBusyChange={setReminderBusy}
+                    />
 
                     <View style={styles.section}>
                         <PlantField

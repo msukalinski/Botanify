@@ -144,3 +144,33 @@ export async function deletePlant(plantId) {
 
     return data;
 }
+
+export async function updatePlantReminders(plantId, enabled) {
+    if (typeof enabled !== 'boolean') {
+        throw new Error('Choose a valid reminder preference.');
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError) {
+        throw authError;
+    }
+
+    if (!user) {
+        throw new Error('Log in to change watering reminders.');
+    }
+
+    const { data, error } = await supabase
+        .from('plants')
+        .update({ remindersEnabled: enabled })
+        .eq('id', plantId)
+        .eq('ownerId', user.id)
+        .select('*')
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}

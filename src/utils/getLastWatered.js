@@ -1,6 +1,7 @@
 export function getLastWatered(
     daysAgo,
-    timeZone = 'Europe/Athens'
+    timeZone = 'Europe/Athens',
+    now = new Date(),
 ) {
     if (daysAgo === null) {
         return null;
@@ -17,7 +18,7 @@ export function getLastWatered(
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
-    }).formatToParts(new Date());
+    }).formatToParts(now);
 
     const part = (type) => Number(parts.find((value) => value.type === type)?.value);
     const date = new Date(Date.UTC(part('year'), part('month') - 1, part('day')));
