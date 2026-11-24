@@ -385,12 +385,17 @@ export default function CreatePlantScreen({
                     </View>
 
                     <Pressable
-                        style={({ pressed }) => [styles.submitButton, pressed && styles.pressed]}
+                        style={({ pressed }) => [styles.submitButton, (submitting || reminderBusy) && styles.disabled, pressed && !submitting && !reminderBusy && styles.pressed]}
                         onPress={formAction}
-                        disabled={submitting}
+                        disabled={submitting || reminderBusy}
                         accessibilityRole="button"
-                        accessibilityLabel={submitting ? 'Adding plant' : 'Add plant'}
-                        accessibilityState={{ disabled: submitting, busy: submitting }}
+                        accessibilityLabel={submitting
+                            ? 'Adding plant'
+                            : reminderBusy
+                                ? 'Updating reminder preference'
+                                : 'Add plant'
+                        }
+                        accessibilityState={{ disabled: submitting || reminderBusy, busy: submitting || reminderBusy }}
                     >
                         {submitting ? (
                             <ActivityIndicator size="small" color="#FFFFFF" />
@@ -398,7 +403,11 @@ export default function CreatePlantScreen({
                             <Ionicons name="add-circle-outline" size={23} color="#FFFFFF" />
                         )}
                         <Text style={styles.submitText} accessibilityLiveRegion="polite">
-                            {submitting ? 'Adding plant…' : 'Add plant'}
+                            {submitting
+                                ? 'Adding plant…'
+                                : reminderBusy
+                                    ? 'Updating reminders...'
+                                    : 'Add plant'}
                         </Text>
                     </Pressable>
 

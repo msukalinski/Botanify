@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Image,
     Pressable,
     ScrollView,
@@ -15,7 +16,8 @@ import {
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { deletePlant, getPlantById, updateWaterDate } from '../services/plantService';
+import { deletePlant, getPlantById, updatePlantReminders, updateWaterDate } from '../services/plantService';
+import { cancelPlantReminder, schedulePlantReminder } from '../services/notificationService';
 
 import { getLastWatered } from '../utils/getLastWatered';
 import { toCatalogPlant } from '../utils/toCatalogPlant';
@@ -23,6 +25,7 @@ import { confirmAction } from '../utils/confirmAction';
 import useCurrentDate from '../hooks/useCurrentDate';
 
 import CareTile from '../components/details/CareTile';
+import PlantReminderToggle from '../components/notificanions/PlantReminderToggle';
 import LoadingIndicator from '../components/loading-indicator/LoadingIndicator';
 import ErrorMessage from '../components/error-message/ErrorMessage';
 import NotFound from '../components/not-found/NotFound';
@@ -68,6 +71,7 @@ export default function DetailsScreen({
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [reminderBusy, setReminderBusy] = useState(false);
     const [loadingError, setLoadingError] = useState('');
     const [updatingError, setUpdatingError] = useState('');
     const [deleteError, setDeleteError] = useState('');
@@ -122,7 +126,7 @@ export default function DetailsScreen({
     const plant = plantData
         ? toCatalogPlant(plantData, today)
         : null;
-    const mutating = updating || deleting;
+    const mutating = updating || deleting || reminderBusy;
 
     const markWateredHandler = async () => {
         if (mutationPending.current || !plant || plant.lastWateredAt === getLastWatered(0)) {
@@ -138,6 +142,12 @@ export default function DetailsScreen({
             if (mounted.current) {
                 refreshToday();
                 setPlantData(updatedPlant);
+            }
+
+            const warning = await schedulePlantReminder(updatedPlant);
+
+            if (warning && mounted.current) {
+                Alert.alert('Watering saved', warning);
             }
         } catch (err) {
             if (mounted.current) {
@@ -170,6 +180,7 @@ export default function DetailsScreen({
         if (toCatalogPlant(plantData, currentDay).status === 'healthy') {
             confirmationPending.current = true;
             let confirmed;
+
             try {
                 confirmed = await confirmAction({
                     title: 'Water earlier?',
@@ -186,6 +197,30 @@ export default function DetailsScreen({
 
         await markWateredHandler();
     };
+
+    const changeReminderHandler = async (enabled) => {
+        if (mutationPending.current || !plant) {
+            return;
+        }
+
+        mutationPending.current = true;
+
+        try {
+            const updatedPlant = await updatePlantReminders(plant.id, enabled);
+
+            if (mounted.current) {
+                setPlantData(updatedPlant);
+            }
+
+            const warning = await schedulePlantReminder(updatedPlant);
+
+            if (warning && mounted.current) {
+                Alert.alert('Preference saved', warning);
+            }
+        } finally {
+            mutationPending.current = false;
+        }
+    }
 
     const openRemindersHandler = () => {
         if (mutationPending.current || !plant) {
@@ -209,6 +244,12 @@ export default function DetailsScreen({
 
         try {
             await deletePlant(plant.id);
+
+            const warning = await cancelPlantReminder(plant.id, plant.ownerId);
+
+            if (warning && mounted.current) {
+                Alert.alert('Plant deleted', warning);
+            }
         } catch (err) {
             if (mounted.current) {
                 setDeleteError(
@@ -258,7 +299,7 @@ export default function DetailsScreen({
     if (loading) {
         return <LoadingIndicator message="Loading plant..." fullScreen />;
     }
-    
+
     if (loadingError) {
         return (
             <ErrorMessage
@@ -436,6 +477,14 @@ export default function DetailsScreen({
                         {plant.notes?.trim() || 'No notes yet. Add a few words when you edit this plant.'}
                     </Text>
                 </View>
+
+                <PlantReminderToggle
+                    value={plant.remindersEnabled}
+                    onChange={changeReminderHandler}
+                    hasWateringDate={plant.daysAgo !== null}
+                    disabled={updating || deleting}
+                    onBusyChange={setReminderBusy}
+                />
 
                 <Pressable
                     style={({ pressed }) => [styles.reminderCard, mutating && styles.disabled, pressed && !mutating && styles.pressed]}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
@@ -11,6 +11,7 @@ import LoadingIndicator from '../components/loading-indicator/LoadingIndicator';
 import ErrorMessage from '../components/error-message/ErrorMessage';
 import useCurrentDate from '../hooks/useCurrentDate';
 import { getPlants, updateWaterDate } from '../services/plantService';
+import { schedulePlantReminder } from '../services/notificationService';
 import { toCatalogPlant } from '../utils/toCatalogPlant';
 import { getLastWatered } from '../utils/getLastWatered';
 import { confirmAction } from '../utils/confirmAction';
@@ -206,7 +207,10 @@ export default function RemindersScreen({
 
         const plant = plantsRef.current.find((value) => value.id === plantId);
         const currentDay = getLastWatered(0);
-        if (!plant || plant.lastWateredAt === currentDay) return;
+
+        if (!plant || plant.lastWateredAt === currentDay) {
+            return;
+        }
         refreshToday();
 
         if (toCatalogPlant(plant, currentDay).status === 'healthy') {
@@ -238,6 +242,12 @@ export default function RemindersScreen({
                 plantsRef.current = nextPlants;
                 setPlants(nextPlants);
                 refreshToday();
+            }
+
+            const warning = await schedulePlantReminder(updatedPlant);
+
+            if (warning && mounted.current) {
+                Alert.alert('Watering saved', warning);
             }
         } catch (err) {
             if (mounted.current) {
