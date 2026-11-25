@@ -68,7 +68,7 @@ export function setReminderUser(userId) {
 async function cancelReminder(identifier) {
     const sdk = getNotifications();
 
-    await sdk.cancelAllScheduledNotificationsAsync(identifier);
+    await sdk.cancelScheduledNotificationAsync(identifier);
     await sdk.dismissNotificationAsync(identifier);
 }
 

@@ -6,7 +6,7 @@ import RootNavigator from './navigation/RootNavigator';
 import UserProvider from './contexts/UserProvider';
 
 export default function App() {
-	const { height } = useWindowDimensions
+	const { height } = useWindowDimensions();
 	return (
 		<SafeAreaProvider style={Platform.OS === 'web'
 			? { flex: 1, height, maxHeight: height, minHeight: 0, overflow: 'hidden' }

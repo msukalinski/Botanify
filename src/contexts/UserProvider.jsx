@@ -68,7 +68,7 @@ export default function UserProvider({ children }) {
             active = false;
             setReminderUser(null);
         }
-    })
+    }, [initializing, userId]);
 
     const value = {
         user: session?.user ?? null,

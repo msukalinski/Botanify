@@ -6,7 +6,7 @@ export function getReminderDate(plant, now = new Date()) {
     const lastWatered = plant.lastWateredAt;
     const frequency = Number(plant.wateringFrequencyDays);
 
-    if (typeof lastWatered === 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(lastWatered)
+    if (typeof lastWatered !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(lastWatered)
         || !Number.isInteger(frequency) || frequency < 1 || frequency > 30) {
         return null;
     }

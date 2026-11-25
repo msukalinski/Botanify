@@ -68,8 +68,8 @@ export default function RemindersScreen({
         }
 
         const currentRequest = ++requestId.current;
-        const isCurrent = () => mounted && focused.current && requestId.current === currentRequest;
-        setLoadError(true);
+        const isCurrent = () => mounted.current && focused.current && requestId.current === currentRequest;
+        setLoading(true);
         setLoadError('');
 
         try {
@@ -159,6 +159,7 @@ export default function RemindersScreen({
             if (frame !== null) {
                 cancelAnimationFrame(frame);
             }
+
             frame = requestAnimationFrame(() => {
                 frame = null;
                 const row = rowRefs.current.get(targetPlantId);
@@ -236,6 +237,7 @@ export default function RemindersScreen({
 
         try {
             const updatedPlant = await updateWaterDate(plantId);
+
             if (mounted.current) {
                 writeRevision.current += 1;
                 const nextPlants = plantsRef.current.map((value) => value.id === plantId ? updatedPlant : value);

@@ -36,11 +36,31 @@ export default function PlantReminderToggle({
         onBusyChange?.(true);
 
         try {
+            if (enabled && notificationsSupported) {
+                const allowed = requestNotificationPermission();
 
+                if (!mounted.current) {
+                    return;
+                }
+
+                if (!allowed) {
+                    setPermissionDenied(true);
+                    setError('Allow notifications in your phone settings to enable reminders.');
+                    return;
+                }
+            }
+            await onChange(enabled);
         } catch (err) {
-
+            if (mounted.current) {
+                setError(err.message || 'Could not change watering reminders. Please try again.');
+            }
         } finally {
+            pending.current = false;
 
+            if (mounted.current) {
+                setBusy(false);
+                onBusyChange?.(false);
+            }
         }
     };
 
