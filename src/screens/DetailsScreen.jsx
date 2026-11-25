@@ -297,7 +297,7 @@ export default function DetailsScreen({
     };
 
     if (loading) {
-        return <LoadingIndicator message="Loading plant..." fullScreen />;
+        return <LoadingIndicator message="Gathering plant profile..." fullScreen />;
     }
 
     if (loadingError) {

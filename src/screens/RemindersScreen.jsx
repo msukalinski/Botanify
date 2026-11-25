@@ -269,7 +269,7 @@ export default function RemindersScreen({
     };
 
     if (loading) {
-        return <LoadingIndicator message="Loading reminders..." fullScreen style={styles.screen} />;
+        return <LoadingIndicator message="Gathering your plant reminders..." fullScreen style={styles.screen} />;
     }
     if (loadError) {
         return <ErrorMessage

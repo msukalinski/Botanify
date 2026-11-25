@@ -30,6 +30,11 @@ export default function CatalogScreen({
     route,
     onPlantMenu,
 }) {
+    const insets = useSafeAreaInsets();
+    const { width } = useWindowDimensions();
+    const containerWidth = Math.min(width - insets.left - insets.right, 560);
+    const cardWidth = (containerWidth - 36 - 12) / 2;
+
     const [plantData, setPlants] = useState([]);
     const { today } = useCurrentDate();
     const plants = useMemo(
@@ -41,8 +46,6 @@ export default function CatalogScreen({
     const [reloadKey, setReloadKey] = useState(0);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
-    const insets = useSafeAreaInsets();
-    const { width } = useWindowDimensions();
 
     const createdPlantId = route?.params?.createdPlantId;
 
@@ -87,8 +90,7 @@ export default function CatalogScreen({
         };
     }, [reloadKey]));
 
-    const containerWidth = Math.min(width - insets.left - insets.right, 560);
-    const cardWidth = (containerWidth - 36 - 12) / 2;
+
     const query = search.trim().toLowerCase();
     const needsWaterCount = plants.filter((plant) => plant.status === 'water').length;
     const collection = createdPlantId
@@ -198,7 +200,7 @@ export default function CatalogScreen({
                     />
                 )}
                 ListEmptyComponent={loading ? (
-                    <LoadingIndicator message='Loading your plants...' />
+                    <LoadingIndicator message='Gathering your plants...' />
                 ) : loadError ? (
                     <ErrorMessage
                         title='Could not load your plants'

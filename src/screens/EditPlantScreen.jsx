@@ -21,19 +21,6 @@ import samplePlants from '../data/plants';
 
 import { colors } from '../theme';
 
-// const samplePlant = {
-//     id: 'monstera',
-//     name: 'Monstera',
-//     species: 'Monstera deliciosa',
-//     location: 'Living room',
-//     image: require('../../../assets/plants/monstera.jpg'),
-//     wateringFrequencyDays: 5,
-//     lastWateredDaysAgo: 5,
-//     lightPreference: 'Bright indirect light',
-//     remindersEnabled: true,
-//     notes: 'A gift from a friend. This plant sits beside the living-room window and is the first member of my green collection.',
-// };
-
 const lightOptions = [
     { label: 'Low light', value: 'Low light', icon: 'cloud-outline' },
     { label: 'Indirect light', value: 'Bright indirect light', icon: 'partly-sunny-outline' },
@@ -43,7 +30,6 @@ const lightOptions = [
 export default function EditPlantScreen({
     route,
     navigation,
-    // plant = samplePlant,
     onCancel,
     onTakePhoto,
     onChoosePhoto,
