@@ -21,11 +21,12 @@ import HomeHeader from "../components/home/HomeHeader";
 import SectionHeader from "../components/home/SectionHeader";
 import PlantCard from "../components/home/PlantCard";
 import CareRow from "../components/home/CareRow";
-
-import { colors } from "../theme";
 import LoadingIndicator from "../components/loading-indicator/LoadingIndicator";
 import ErrorMessage from "../components/error-message/ErrorMessage";
 import EmptyState from "../components/empty-state/EmptyState";
+
+import { colors } from "../theme";
+import PlantCareBasics from "../components/home/PlantCareBasics";
 
 export default function HomeScreen({
     navigation,
@@ -189,49 +190,7 @@ export default function HomeScreen({
                             </View>
                         </View>
 
-                        <View style={styles.quickLinks}>
-                            <Pressable
-                                style={({ pressed }) => [styles.quickCard, styles.scheduleCard, pressed && styles.pressed]}
-                                accessibilityRole="button"
-                                accessibilityLabel="Watering schedule, 3 plants this week"
-                                onPress={() => navigation.navigate('Reminders')}
-                            >
-                                <View style={styles.quickCardHeader}>
-                                    <View style={[styles.quickIcon, styles.scheduleIcon]}>
-                                        <Ionicons name="calendar-outline" size={20} color={colors.primaryGreen} />
-                                    </View>
-                                    <Text style={styles.quickTitle}>Watering Schedule</Text>
-                                    <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
-                                </View>
-                                <Text style={styles.quickSubtitle}>Keep your plants on track</Text>
-                                <View style={styles.scheduleBottom}>
-                                    <Text style={styles.scheduleCount}>3</Text>
-                                    <Text style={styles.scheduleCountLabel}>plants{'\n'}this week</Text>
-                                    <Image source={plants?.image} style={styles.scheduleImage} accessible={false} />
-                                </View>
-                            </Pressable>
-
-                            <Pressable
-                                style={({ pressed }) => [styles.quickCard, styles.tipsCard, pressed && styles.pressed]}
-                                accessibilityRole="button"
-                                accessibilityLabel="Read 5 tips for happier houseplants"
-                            // onPress={}
-                            >
-                                <View style={styles.quickCardHeader}>
-                                    <View style={[styles.quickIcon, styles.tipsIcon]}>
-                                        <Ionicons name="bulb-outline" size={21} color="#C88B15" />
-                                    </View>
-                                    <Text style={styles.quickTitle}>Tips for Healthy Plants</Text>
-                                    <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
-                                </View>
-                                <Text style={styles.quickSubtitle}>Learn and grow together</Text>
-                                <View style={styles.tipPreview}>
-                                    <Image source={plants?.image} style={styles.tipImage} accessible={false} />
-                                    <Text style={styles.tipText}>5 Tips for Happier Houseplants</Text>
-                                    <Ionicons name="chevron-forward" size={13} color={colors.secondaryText} />
-                                </View>
-                            </Pressable>
-                        </View>
+                        <PlantCareBasics />
                     </>
                 )}
             </ScrollView>
