@@ -17,7 +17,13 @@ export default function PlantCard({
                     accessibilityRole="button"
                     accessibilityLabel={`Open ${plant.name}`}
                 >
-                    <Image source={plant.image} style={styles.plantImage} accessible={false} />
+                    {plant.image ? (
+                        <Image source={plant.image} style={styles.plantImage} accessible={false} />
+                    ) : (
+                        <View style={styles.imagePlaceholder} accessible={false}>
+                            <Ionicons name="leaf-outline" size={25} color={colors.primaryGreen} />
+                        </View>
+                    )}
                 </Pressable>
                 <Pressable
                     style={({ pressed }) => [styles.plantMenu, pressed && styles.pressed]}
@@ -72,6 +78,12 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+    },
+    imagePlaceholder: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.lightGreenBackground,
     },
     plantMenu: {
         position: 'absolute',

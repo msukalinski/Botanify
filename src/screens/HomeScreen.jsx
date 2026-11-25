@@ -1,3 +1,4 @@
+import { useCallback, useMemo, useState } from "react";
 import {
     Image,
     Pressable,
@@ -10,53 +11,90 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "@react-native-vector-icons/ionicons";
+import { useFocusEffect } from "@react-navigation/native";
+
+import { getPlants } from "../services/plantService";
+import useCurrentDate from "../hooks/useCurrentDate";
+import { toCatalogPlant } from "../utils/toCatalogPlant";
 
 import HomeHeader from "../components/home/HomeHeader";
-import { colors } from "../theme";
 import SectionHeader from "../components/home/SectionHeader";
 import PlantCard from "../components/home/PlantCard";
 import CareRow from "../components/home/CareRow";
 
-const plants = [
-    {
-        id: 'monstera',
-        name: 'Monstera',
-        image: require('../../assets/plants/monstera.jpg'),
-        status: 'Needs water',
-        statusIcon: 'water',
-        statusColor: colors.waterText,
-        statusBackground: colors.waterBackground,
-        wateringInfo: 'Last watered 5 days ago',
-    },
-    {
-        id: 'snake-plant',
-        name: 'Snake Plant',
-        image: require('../../assets/plants/snake-plant.jpg'),
-        status: 'Doing great',
-        statusIcon: 'leaf',
-        statusColor: colors.healthyText,
-        statusBackground: colors.healthyBackground,
-        wateringInfo: 'Water in 5 days',
-    },
-    {
-        id: 'pothos',
-        name: 'Pothos',
-        image: require('../../assets/plants/pothos.jpg'),
-        status: 'Indirect light',
-        statusIcon: 'sunny',
-        statusColor: colors.lightText,
-        statusBackground: colors.lightBackground,
-        wateringInfo: 'Last watered 2 days ago',
-    },
-];
+import { colors } from "../theme";
+import LoadingIndicator from "../components/loading-indicator/LoadingIndicator";
+import ErrorMessage from "../components/error-message/ErrorMessage";
+import EmptyState from "../components/empty-state/EmptyState";
 
 export default function HomeScreen({
-    navigation
+    navigation,
+    route
 }) {
     const insets = useSafeAreaInsets();
     const { width, fontScale } = useWindowDimensions();
     const contentWidth = Math.min(width - insets.left - insets.right, 560) - 36;
     const plantCardWidth = Math.max(108 * fontScale, (contentWidth - 18) / 3);
+
+    const { today } = useCurrentDate();
+    const [plantData, setPlantData] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [loadingError, setLoadingError] = useState('');
+    const [reloadKey, setReloadKey] = useState(0);
+
+    useFocusEffect(useCallback(() => {
+        let active = true;
+
+        const loadPlants = async () => {
+            setLoading(true);
+            setLoadingError('');
+
+            try {
+                const data = await getPlants();
+
+                if (active) {
+                    setPlantData(data);
+                }
+            } catch (err) {
+                if (active) {
+                    setLoadingError(err?.message || 'Could not load your plants.');
+                }
+            } finally {
+                if (active) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        loadPlants();
+
+        return () => {
+            active = false;
+        }
+    }, [reloadKey]));
+
+    const plants = useMemo(() => plantData.map((plant) => {
+        return toCatalogPlant(plant, today);
+    }), [plantData, today]);
+
+    const scrollViewPlants = plants.slice(0, 6);
+
+    const todaysCare = plants.filter((plant) => plant.status === 'water');
+    const todaysCareLength = todaysCare.length;
+
+    if (loading) {
+        return <LoadingIndicator message="Gathering your garden..." fullScreen />
+    }
+
+    if (loadingError) {
+        return (
+            <ErrorMessage
+                message={loadingError}
+                onRetry={() => setReloadKey((previous) => previous + 1)}
+                fullScreen
+            />
+        )
+    }
 
     return (
         <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
@@ -67,121 +105,135 @@ export default function HomeScreen({
 
                 <HomeHeader />
 
-                <View style={styles.searchBar}>
-                    <Ionicons name="search-outline" size={22} color={colors.secondaryText} />
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search plants, care tips, or problems..."
-                        placeholderTextColor={colors.secondaryText}
-                        accessibilityLabel="Search plants, care tips"
-                        returnKeyType="search"
-                        autoCorrect={false}
+                {plants.length === 0 ? (
+                    <EmptyState
+                        icon="leaf-outline"
+                        title="Your green world starts here"
+                        message="Add your first plant to start tracking its watering and care."
+                        actionLabel="Add your first plant"
+                        onAction={() => navigation.navigate('AddPlant')}
                     />
-                </View>
-
-                <View style={styles.section}>
-                    <SectionHeader
-                        title="My Plants"
-                        actionLabel="View all"
-                        onPress={() => navigation.navigate('Plants')}
-                    />
-                    <ScrollView
-                        horizontal
-                        style={styles.plantScroller}
-                        contentContainerStyle={styles.plantRow}
-                        showsHorizontalScrollIndicator={false}
-                    >
-                        {plants.map((plant) => (
-                            <PlantCard
-                                key={plant.id}
-                                plant={plant}
-                                width={plantCardWidth}
-                            // onPress={}
-                            // onMenuPress={}
-                            />
-                        ))}
-                    </ScrollView>
-                </View>
-
-                <View style={styles.carePanel}>
-                    <SectionHeader
-                        title="Today's Care"
-                        actionLabel="See all"
-                        onPress={() => navigation.navigate('Reminders')}
-                    />
-
-                    <View style={styles.careBody}>
-                        <View style={styles.careList}>
-                            <CareRow
-                                icon="water"
-                                iconColor="#168C96"
-                                iconBackground="#D8EEEB"
-                                title="Water 1 plant"
-                                subtitle="Monstera needs water"
-                            // onPress={}
-                            />
-                            <View style={styles.careDivider} />
-                            <CareRow
-                                icon="leaf"
-                                iconColor={colors.primaryGreen}
-                                iconBackground="#DDEDCF"
-                                title="Check light"
-                                subtitle="Pothos prefers indirect light"
-                            // onPress={}
+                ) : (
+                    <>
+                        <View style={styles.searchBar}>
+                            <Ionicons name="search-outline" size={22} color={colors.secondaryText} />
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Search plants, care tips, or problems..."
+                                placeholderTextColor={colors.secondaryText}
+                                accessibilityLabel="Search plants, care tips"
+                                returnKeyType="search"
+                                autoCorrect={false}
                             />
                         </View>
-                        <View style={styles.careDecoration} accessible={false}>
-                            <View style={styles.careDecorationCircle}>
-                                <Ionicons name="water-outline" size={38} color="#7A9A63" />
-                            </View>
-                            <Text style={styles.careQuote}>Small steps,{'\n'}healthy plants</Text>
-                        </View>
-                    </View>
-                </View>
 
-                <View style={styles.quickLinks}>
-                    <Pressable
-                        style={({ pressed }) => [styles.quickCard, styles.scheduleCard, pressed && styles.pressed]}
-                        accessibilityRole="button"
-                        accessibilityLabel="Watering schedule, 3 plants this week"
-                        onPress={() => navigation.navigate('Reminders')}
-                    >
-                        <View style={styles.quickCardHeader}>
-                            <View style={[styles.quickIcon, styles.scheduleIcon]}>
-                                <Ionicons name="calendar-outline" size={20} color={colors.primaryGreen} />
-                            </View>
-                            <Text style={styles.quickTitle}>Watering Schedule</Text>
-                            <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
+                        <View style={styles.section}>
+                            <SectionHeader
+                                title="My Plants"
+                                actionLabel="View all"
+                                onPress={() => navigation.navigate('Plants')}
+                            />
+                            <ScrollView
+                                horizontal
+                                style={styles.plantScroller}
+                                contentContainerStyle={styles.plantRow}
+                                showsHorizontalScrollIndicator={false}
+                            >
+                                {scrollViewPlants.map((plant) => (
+                                    <PlantCard
+                                        key={plant.id}
+                                        plant={plant}
+                                        width={plantCardWidth}
+                                        onPress={() => navigation.navigate('PlantDetails', {
+                                            plantId: plant.id
+                                        })}
+                                    // onMenuPress={}
+                                    />
+                                ))}
+                            </ScrollView>
                         </View>
-                        <Text style={styles.quickSubtitle}>Keep your plants on track</Text>
-                        <View style={styles.scheduleBottom}>
-                            <Text style={styles.scheduleCount}>3</Text>
-                            <Text style={styles.scheduleCountLabel}>plants{'\n'}this week</Text>
-                            <Image source={plants[0].image} style={styles.scheduleImage} accessible={false} />
-                        </View>
-                    </Pressable>
 
-                    <Pressable
-                        style={({ pressed }) => [styles.quickCard, styles.tipsCard, pressed && styles.pressed]}
-                        accessibilityRole="button"
-                        accessibilityLabel="Read 5 tips for happier houseplants"
-                    // onPress={}
-                    >
-                        <View style={styles.quickCardHeader}>
-                            <View style={[styles.quickIcon, styles.tipsIcon]}>
-                                <Ionicons name="bulb-outline" size={21} color="#C88B15" />
+                        <View style={styles.carePanel}>
+                            <SectionHeader
+                                title="Today's Care"
+                                actionLabel="See all"
+                                onPress={() => navigation.navigate('Reminders')}
+                            />
+
+                            <View style={styles.careBody}>
+                                <View style={styles.careList}>
+                                    <CareRow
+                                        icon="water"
+                                        iconColor="#168C96"
+                                        iconBackground="#D8EEEB"
+                                        title={todaysCareLength === 0 ? (
+                                            'No watering due'
+                                        ) : (
+                                            `Water ${todaysCareLength} ${todaysCareLength === 1 ? 'plant' : 'plants'}`
+                                        )}
+                                        subtitle={todaysCareLength === 0
+                                            ? "You're all caught up"
+                                            : todaysCareLength <= 2
+                                                ? todaysCare.map((plant) => plant.name).join(' & ')
+                                                : `${todaysCare[0].name}, ${todaysCare[1].name} +${todaysCareLength - 2} more`}
+                                        onPress={() => navigation.navigate('Reminders')}
+                                    />
+
+                                </View>
+                                <View style={styles.careDecoration} accessible={false}>
+                                    <View style={styles.careDecorationCircle}>
+                                        <Ionicons name="water-outline" size={38} color="#7A9A63" />
+                                    </View>
+                                    <Text style={styles.careQuote}>Small steps,{'\n'}healthy plants</Text>
+                                </View>
                             </View>
-                            <Text style={styles.quickTitle}>Tips for Healthy Plants</Text>
-                            <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
                         </View>
-                        <Text style={styles.quickSubtitle}>Learn and grow together</Text>
-                        <View style={styles.tipPreview}>
-                            <Image source={plants[2].image} style={styles.tipImage} accessible={false} />
-                            <Text style={styles.tipText}>5 Tips for Happier Houseplants</Text>
-                            <Ionicons name="chevron-forward" size={13} color={colors.secondaryText} />
+
+                        <View style={styles.quickLinks}>
+                            <Pressable
+                                style={({ pressed }) => [styles.quickCard, styles.scheduleCard, pressed && styles.pressed]}
+                                accessibilityRole="button"
+                                accessibilityLabel="Watering schedule, 3 plants this week"
+                                onPress={() => navigation.navigate('Reminders')}
+                            >
+                                <View style={styles.quickCardHeader}>
+                                    <View style={[styles.quickIcon, styles.scheduleIcon]}>
+                                        <Ionicons name="calendar-outline" size={20} color={colors.primaryGreen} />
+                                    </View>
+                                    <Text style={styles.quickTitle}>Watering Schedule</Text>
+                                    <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
+                                </View>
+                                <Text style={styles.quickSubtitle}>Keep your plants on track</Text>
+                                <View style={styles.scheduleBottom}>
+                                    <Text style={styles.scheduleCount}>3</Text>
+                                    <Text style={styles.scheduleCountLabel}>plants{'\n'}this week</Text>
+                                    <Image source={plants?.image} style={styles.scheduleImage} accessible={false} />
+                                </View>
+                            </Pressable>
+
+                            <Pressable
+                                style={({ pressed }) => [styles.quickCard, styles.tipsCard, pressed && styles.pressed]}
+                                accessibilityRole="button"
+                                accessibilityLabel="Read 5 tips for happier houseplants"
+                            // onPress={}
+                            >
+                                <View style={styles.quickCardHeader}>
+                                    <View style={[styles.quickIcon, styles.tipsIcon]}>
+                                        <Ionicons name="bulb-outline" size={21} color="#C88B15" />
+                                    </View>
+                                    <Text style={styles.quickTitle}>Tips for Healthy Plants</Text>
+                                    <Ionicons name="chevron-forward" size={14} color={colors.secondaryText} />
+                                </View>
+                                <Text style={styles.quickSubtitle}>Learn and grow together</Text>
+                                <View style={styles.tipPreview}>
+                                    <Image source={plants?.image} style={styles.tipImage} accessible={false} />
+                                    <Text style={styles.tipText}>5 Tips for Happier Houseplants</Text>
+                                    <Ionicons name="chevron-forward" size={13} color={colors.secondaryText} />
+                                </View>
+                            </Pressable>
                         </View>
-                    </Pressable>
-                </View>
+                    </>
+                )}
             </ScrollView>
 
         </SafeAreaView>
